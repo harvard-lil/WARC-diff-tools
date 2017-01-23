@@ -1,3 +1,4 @@
+import sys
 import warc
 import zlib
 import simhash
@@ -40,3 +41,12 @@ def payload_to_text(payload):
 
 def get_distance(str_one, str_two):
     return simhash.Simhash(str_one).distance(simhash.Simhash(str_two))
+
+
+if __name__ == '__main__':
+    w1 = warc_to_dict(sys.argv[1])
+    w2 = warc_to_dict(sys.argv[2])
+    p1 = payload_to_text(w1['payload'])
+    p2 = payload_to_text(w2['payload'])
+    distance = get_distance(p1, p2)
+    print "distance is %s" % distance
