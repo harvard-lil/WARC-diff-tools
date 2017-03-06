@@ -68,7 +68,6 @@ def get_distance(str_one, str_two):
         res =  simhash.Simhash(str_one).distance(simhash.Simhash(str_two))
     except:
         res = None
-        # import ipdb; ipdb.set_trace()
         pass
     finally:
         return res
