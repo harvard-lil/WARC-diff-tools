@@ -1,5 +1,4 @@
 import unittest
-import re
 from utils import html_to_text, get_simhash_distance, sort_resources
 from fixtures import example_html_str, example_diff_html_str
 
