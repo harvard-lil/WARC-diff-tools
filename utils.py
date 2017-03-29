@@ -1,3 +1,6 @@
+import os
+import urlparse
+import warc
 from httplib import HTTPResponse
 from StringIO import StringIO
 import zlib
@@ -73,3 +76,20 @@ def sort_resources(collection_one, collection_two):
         added_resources[key] = list(set_b - set_a)
 
     return (missing_resources, added_resources, common_resources)
+
+
+def get_warc_parts(warc_path, submitted_url):
+    warc_open = warc.open(warc_path)
+    response_urls = {}
+    for record in warc_open:
+        if record.type == 'response':
+            path = urlparse.urlparse(record.url).path
+            ext = os.path.splitext(path)[1]
+            if ext in response_urls:
+                response_urls[ext].append(record.url)
+            else:
+                response_urls[ext] = [record.url]
+
+            if record.url == submitted_url:
+                payload = decompress_payload(record.payload.read(), 'response', record.url)
+    return payload, response_urls
