@@ -2,7 +2,7 @@ import unittest
 from utils import html_to_text, get_simhash_distance, sort_resources
 from fixtures import example_html_str, example_diff_html_str
 
-class TestUtilsBs(unittest.TestCase):
+class TestUtils(unittest.TestCase):
     def test_html_to_text(self):
         self.assertTrue("<script>" in example_html_str)
         self.assertTrue("<head>" in example_html_str)
