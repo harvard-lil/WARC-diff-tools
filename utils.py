@@ -54,3 +54,22 @@ def decompress_payload(payload, record_type, record_url):
         # except:
         #     result = payload
     return result
+
+def sort_resources(collection_one, collection_two):
+    """
+    sorting dictionaries of collections into:
+        - missing (no longer available),
+        - added (newly added since first capture), and
+        - common (seen in both)
+    """
+
+    missing_resources, added_resources, common_resources = dict(), dict(), dict()
+
+    for key in collection_one.keys():
+        set_a = set(collection_one[key])
+        set_b = set(collection_two[key])
+        common_resources[key] = list(set_a & set_b)
+        missing_resources[key] = list(set_a - set_b)
+        added_resources[key] = list(set_b - set_a)
+
+    return (missing_resources, added_resources, common_resources)
