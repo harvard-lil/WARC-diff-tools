@@ -1,6 +1,6 @@
 import unittest
-from utils import html_to_text, get_simhash_distance, sort_resources
-from fixtures import example_html_str, example_diff_html_str
+from utils import html_to_text, get_simhash_distance, sort_resources, is_unminified
+from fixtures import *
 
 class TestUtils(unittest.TestCase):
     def test_html_to_text(self):
@@ -39,6 +39,20 @@ class TestUtils(unittest.TestCase):
         self.assertTrue('img2.png' not in missing['.png'])
         self.assertTrue('img5.jpg' in added['.jpg'])
         self.assertEqual(['script.js'], common['.js'])
+
+    def test_is_minified(self):
+        minified = is_unminified(unminified_script, "js")
+        self.assertTrue(minified)
+        minified = is_unminified(minified_script, "js")
+        self.assertFalse(minified)
+        minified = is_unminified(unminified_script2, "js")
+        self.assertTrue(minified)
+        minified = is_unminified(minified_script2, "js")
+        self.assertFalse(minified)
+        minified = is_unminified(unminified_css, "css")
+        self.assertTrue(minified)
+        minified = is_unminified(minified_css, "css")
+        self.assertFalse(minified)
 
 def main():
     unittest.main()
