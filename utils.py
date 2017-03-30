@@ -1,4 +1,5 @@
 import os
+import re
 import urlparse
 import warc
 from httplib import HTTPResponse
@@ -17,6 +18,28 @@ def html_to_text(html_str):
     soup = BeautifulSoup(html_str, "html.parser")
     [s.extract() for s in soup('script')]
     return soup.body.getText()
+
+def is_unminified(script_str, type_of_script):
+    """
+        if includes newlines, tabs, returns, and more than two spaces,
+        not likely to be minified
+    """
+    whitespaces_found = len(re.compile('\n|\t|\r|\s{2}').findall(script_str)) > 1
+
+    if type_of_script == "css":
+        return whitespaces_found
+
+    elif type_of_script == "js":
+        # minifiers reduce params to single letters
+        try:
+            params_found = re.compile('function\s+\w+\(\w{2,}').search(script_str).group()
+        except:
+            params_found = None
+        
+        if params_found:
+            return True
+
+        return whitespaces_found
 
 def get_simhash_distance(str_one, str_two):
     try:
