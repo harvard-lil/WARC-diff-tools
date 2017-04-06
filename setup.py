@@ -13,11 +13,6 @@ setup(
     license = "BSD",
     keywords = "WARC diff",
     url = "",
-    packages=['warc_diff_tools', 'tests'],
+    packages=['warc_diff_tools'],
     long_description=read('README'),
-    classifiers=[
-        "Development Status :: 3 - Alpha",
-        "Topic :: Utilities",
-        "License :: OSI Approved :: BSD License",
-    ],
 )
