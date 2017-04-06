@@ -66,7 +66,7 @@ def warc_to_dict(warc_filename):
         else:
             response[record.type] = {record.url:[payload]}
 
-def decompress_payload(payload, record_type, record_url):
+def decompress_payload(payload):
     try:
         source = FakeSocket(payload)
         res = HTTPResponse(source)
