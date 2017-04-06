@@ -118,18 +118,19 @@ def sort_resources(collection_one, collection_two):
         missing_resources[key] = list(set_a - set_b)
         added_resources[key] = list(set_b - set_a)
 
-    return (missing_resources, added_resources, common_resources)
+    return missing_resources, added_resources, common_resources
 
 
 def get_warc_parts(warc_path, submitted_url):
     warc_open = warc.open(warc_path)
     response_urls, css, js = dict(), dict(), dict()
+    payload = ''
 
     for record in warc_open:
         if record.type == 'response':
             path = urlparse.urlparse(record.url).path
             ext = os.path.splitext(path)[1]
-            if record.url == submitted_url:
+            if record.url[:-1] == submitted_url or record.url == submitted_url:
                 payload = decompress_payload(record.payload.read())
                 ext = 'index'
 
