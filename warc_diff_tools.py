@@ -3,9 +3,9 @@ from htmldiff import diff
 import utils
 
 def expand_warcs(warc_one_path, warc_two_path, submitted_url_one, submitted_url_two):
-    warc_one_index, urls_one = utils.get_warc_parts(warc_one_path, submitted_url_one)
-    warc_two_index, urls_two = utils.get_warc_parts(warc_two_path, submitted_url_two)
-    return ((warc_one_index, urls_one), (warc_two_index, urls_two))
+    warc_one_index, css_one, js_one, urls_one = utils.get_warc_parts(warc_one_path, submitted_url_one)
+    warc_two_index, css_two, js_two, urls_two = utils.get_warc_parts(warc_two_path, submitted_url_two)
+    return ((warc_one_index, css_one, js_one, urls_one), (warc_two_index, css_two, js_two, urls_two))
 
 def get_visual_diffs(warc_one_index, warc_two_index):
     """
