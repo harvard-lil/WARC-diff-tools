@@ -66,7 +66,7 @@ def warc_to_dict(warc_filename):
         else:
             response[record.type] = {record.url:[payload]}
 
-def decompress_payload(payload, record_type, record_url):
+def decompress_payload(payload):
     try:
         source = FakeSocket(payload)
         res = HTTPResponse(source)
@@ -103,16 +103,24 @@ def sort_resources(collection_one, collection_two):
 
 def get_warc_parts(warc_path, submitted_url):
     warc_open = warc.open(warc_path)
-    response_urls = {}
+    response_urls, css, js = dict(), dict(), dict()
+
     for record in warc_open:
         if record.type == 'response':
             path = urlparse.urlparse(record.url).path
             ext = os.path.splitext(path)[1]
+            if record.url == submitted_url:
+                payload = decompress_payload(record.payload.read())
+                ext = 'index'
+
+            if ext == ".css":
+                css[record.url] = decompress_payload(record.payload.read())
+            if ext == ".js":
+                js[record.url] = decompress_payload(record.payload.read())
+
             if ext in response_urls:
                 response_urls[ext].append(record.url)
             else:
                 response_urls[ext] = [record.url]
 
-            if record.url == submitted_url:
-                payload = decompress_payload(record.payload.read(), 'response', record.url)
-    return payload, response_urls
+    return payload, css, js, response_urls
