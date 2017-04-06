@@ -1,3 +1,4 @@
+-e git+git://github.com/anastasia/htmldiff.git@a8fd08afe6dc22afa2aa4eedbb55c4ff206b699c#egg=htmldiff
 beautifulsoup4==4.5.3
 simhash==1.7.1
 warc==0.2.1
