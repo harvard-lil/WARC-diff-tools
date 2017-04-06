@@ -1,5 +1,5 @@
 import unittest
-from utils import html_to_text, get_simhash_distance, sort_resources, is_unminified
+from warc_diff_tools.utils import html_to_text, get_simhash_distance, sort_resources, is_unminified
 from fixtures import *
 
 class TestUtils(unittest.TestCase):

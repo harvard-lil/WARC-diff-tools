@@ -32,14 +32,28 @@ def is_unminified(script_str, type_of_script):
     elif type_of_script == "js":
         # minifiers reduce params to single letters
         try:
-            params_found = re.compile('function\s+\w+\(\w{2,}').search(script_str).group()
+            params_found = re.compile('function\s+\w+\(\w{3,}').search(script_str).group()
         except:
             params_found = None
-        
+
         if params_found:
             return True
 
         return whitespaces_found
+
+# compressability
+# line count
+
+
+
+
+def get_distance(str_one, str_two, algorithm="simhash"):
+    if algorithm == "simhash":
+        get_simhash_distance(str_one, str_two)
+    elif algorithm == "minhash":
+        get_minhash_distance(str_one, str_two)
+    elif algorithm == "mix":
+        get_combined_distance(str_one, str_one)
 
 def get_simhash_distance(str_one, str_two):
     try:
@@ -49,6 +63,12 @@ def get_simhash_distance(str_one, str_two):
         pass
     finally:
         return res
+
+def get_minhash_distance(str_one, str_two):
+    return
+
+def get_combined_distance(str_one, str_two):
+    return
 
 def warc_to_dict(warc_filename):
     # TODO: check if stream
