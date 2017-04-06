@@ -118,7 +118,7 @@ def sort_resources(collection_one, collection_two):
         missing_resources[key] = list(set_a - set_b)
         added_resources[key] = list(set_b - set_a)
 
-    return (missing_resources, added_resources, common_resources)
+    return missing_resources, added_resources, common_resources
 
 
 def get_warc_parts(warc_path, submitted_url):
