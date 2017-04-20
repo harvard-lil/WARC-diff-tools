@@ -12,7 +12,7 @@ def get_visual_diffs(warc_one_index, warc_two_index, style_str=None):
     returns html text marked up with
     1. deletions, 2. insertions, & 3. both deletions & insertions
     """
-    deleted_html, inserted_html, combined_html = diff.text_diff(warc_one_index, warc_two_index, style_str=style_str)
+    deleted_html, inserted_html, combined_html = diff.text_diff(warc_one_index, warc_two_index)
     return deleted_html, inserted_html, combined_html
 
 def get_simhash_distance(warc_one_index, warc_two_index):
