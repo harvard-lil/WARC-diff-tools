@@ -8,7 +8,7 @@ cffi==1.10.0
 chardet==2.3.0
 decorator==4.0.11
 enum34==1.1.6
--e git://github.com/anastasia/htmldiff.git@a8fd08afe6dc22afa2aa4eedbb55c4ff206b699c#egg=htmldiff
+-e git://github.com/anastasia/htmldiff.git@master#egg=htmldiff
 idna==2.5
 ipython-genutils==0.2.0
 Jinja2==2.8.1
