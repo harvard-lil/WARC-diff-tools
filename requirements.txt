@@ -8,12 +8,16 @@ cffi==1.10.0
 chardet==2.3.0
 decorator==4.0.11
 enum34==1.1.6
--e git://github.com/anastasia/htmldiff.git@master#egg=htmldiff
+ez-setup==0.9
+-e git://github.com/anastasia/htmldiff.git@0de62e5a2dc6dc51220749a76419997e65773a2c#egg=htmldiff
 idna==2.5
+ipdb==0.10.3
+ipython==5.3.0
 ipython-genutils==0.2.0
 Jinja2==2.8.1
 jsmin==2.2.1
 MarkupSafe==1.0
+-e git://github.com/anastasia/minhash.git@cf8e5e73b6164b191a18b1cfc072a52a3ea6dfad#egg=minhash
 packaging==16.8
 pathlib2==2.2.1
 pathtools==0.1.2
