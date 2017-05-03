@@ -5,6 +5,7 @@ import warc
 from httplib import HTTPResponse
 from StringIO import StringIO
 import zlib
+import minhash
 import simhash
 from bs4 import BeautifulSoup
 
@@ -41,17 +42,15 @@ def is_unminified(script_str, type_of_script):
 
         return whitespaces_found
 
-# compressability
-# line count
+def get_comparison(str_one, str_two, algorithm="simhash"):
+    rx = re.compile('\n|\t|\r|\s{2}')
+    cleaned_one = rx.sub(' ', str_one)
+    cleaned_two = rx.sub(' ', str_two)
 
-
-
-
-def get_distance(str_one, str_two, algorithm="simhash"):
     if algorithm == "simhash":
-        get_simhash_distance(str_one, str_two)
+        return get_simhash_distance(str_one, str_two)
     elif algorithm == "minhash":
-        get_minhash_distance(str_one, str_two)
+        return minhash.get_minhash(cleaned_one, cleaned_two)
     elif algorithm == "mix":
         get_combined_distance(str_one, str_one)
 
@@ -64,8 +63,6 @@ def get_simhash_distance(str_one, str_two):
     finally:
         return res
 
-def get_minhash_distance(str_one, str_two):
-    return
 
 def get_combined_distance(str_one, str_two):
     return
