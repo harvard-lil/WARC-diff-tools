@@ -11,7 +11,6 @@ enum34==1.1.6
 ez-setup==0.9
 -e git://github.com/anastasia/htmldiff.git@0de62e5a2dc6dc51220749a76419997e65773a2c#egg=htmldiff
 idna==2.5
-ipdb==0.10.3
 ipython==5.3.0
 ipython-genutils==0.2.0
 Jinja2==2.8.1
