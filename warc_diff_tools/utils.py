@@ -67,22 +67,6 @@ def get_simhash_distance(str_one, str_two):
 def get_combined_distance(str_one, str_two):
     return
 
-def warc_to_dict(warc_filename):
-    # TODO: check if stream
-    warc_open = warc.open(warc_filename)
-    response = {}
-
-    for record in warc_open:
-        payload = decompress_payload(record.payload.read(), record.type, record.url)
-
-        if record.type in response:
-            if record.url in response[record.type]:
-                response[record.type][record.url].append(payload)
-            else:
-                response[record.type][record.url] = [payload]
-        else:
-            response[record.type] = {record.url:[payload]}
-
 def decompress_payload(payload):
     try:
         source = FakeSocket(payload)
@@ -90,7 +74,6 @@ def decompress_payload(payload):
         res.begin()
         result = zlib.decompress(res.read(), 16+zlib.MAX_WBITS)
     except Exception as e:
-        # print record_type, record_url
         result = payload
         # try:
         #     result = '.'.join(str(ord(c)) for c in payload)
@@ -127,6 +110,10 @@ def get_payload_headers(payload):
     return header_dict
 
 def expand_warc(warc_path):
+    """
+    expand warcs into dicts with compressed responses
+    organized by content type
+    """
     warc_open = warc.open(warc_path)
     responses = dict()
     for record in warc_open:
