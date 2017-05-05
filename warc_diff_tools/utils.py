@@ -4,6 +4,7 @@ import urlparse
 import warc
 from httplib import HTTPResponse
 from StringIO import StringIO
+from bs4 import BeautifulSoup
 import zlib
 import minhash
 import simhash
