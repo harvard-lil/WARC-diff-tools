@@ -1,5 +1,5 @@
 import unittest
-from warc_diff_tools.utils import *
+from utils import *
 from fixtures import *
 
 class TestUtils(unittest.TestCase):

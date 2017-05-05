@@ -3,7 +3,7 @@ import sys
 from htmldiff import diff
 import utils
 
-class WARCComparison:
+class WARCCompare:
     def __init__(self, warc1_path, warc2_path):
         self.warc1 = utils.expand_warc(warc1_path)
         self.warc2 = utils.expand_warc(warc2_path)
@@ -37,7 +37,7 @@ class WARCComparison:
         For content type javascript, for instance:
             get minhash similarity of all, get simhash distance
         """
-        # TODO: WIP! 
+        # TODO: WIP!
         # TODO: get combined similarity
         common_resources_compared = dict()
         for url in common_resources:

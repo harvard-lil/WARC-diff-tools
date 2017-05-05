@@ -13,6 +13,6 @@ setup(
     license = "BSD",
     keywords = "WARC diff",
     url = "",
-    packages=['warc_diff_tools'],
+    py_modules=["warc_compare"],
     long_description=read('README'),
 )
