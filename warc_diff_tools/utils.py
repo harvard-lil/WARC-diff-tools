@@ -4,9 +4,10 @@ import urlparse
 import warc
 from httplib import HTTPResponse
 from StringIO import StringIO
-import zlib
-import simhash
 from bs4 import BeautifulSoup
+import zlib
+import minhash
+import simhash
 
 class FakeSocket():
     def __init__(self, response_str):
@@ -41,17 +42,15 @@ def is_unminified(script_str, type_of_script):
 
         return whitespaces_found
 
-# compressability
-# line count
+def get_comparison(str_one, str_two, algorithm="simhash"):
+    rx = re.compile('\n|\t|\r|\s{2}')
+    cleaned_one = rx.sub(' ', str_one)
+    cleaned_two = rx.sub(' ', str_two)
 
-
-
-
-def get_distance(str_one, str_two, algorithm="simhash"):
     if algorithm == "simhash":
-        get_simhash_distance(str_one, str_two)
+        return get_simhash_distance(str_one, str_two)
     elif algorithm == "minhash":
-        get_minhash_distance(str_one, str_two)
+        return minhash.get_minhash(cleaned_one, cleaned_two)
     elif algorithm == "mix":
         get_combined_distance(str_one, str_one)
 
@@ -64,27 +63,9 @@ def get_simhash_distance(str_one, str_two):
     finally:
         return res
 
-def get_minhash_distance(str_one, str_two):
-    return
 
 def get_combined_distance(str_one, str_two):
     return
-
-def warc_to_dict(warc_filename):
-    # TODO: check if stream
-    warc_open = warc.open(warc_filename)
-    response = {}
-
-    for record in warc_open:
-        payload = decompress_payload(record.payload.read(), record.type, record.url)
-
-        if record.type in response:
-            if record.url in response[record.type]:
-                response[record.type][record.url].append(payload)
-            else:
-                response[record.type][record.url] = [payload]
-        else:
-            response[record.type] = {record.url:[payload]}
 
 def decompress_payload(payload):
     try:
@@ -93,7 +74,6 @@ def decompress_payload(payload):
         res.begin()
         result = zlib.decompress(res.read(), 16+zlib.MAX_WBITS)
     except Exception as e:
-        # print record_type, record_url
         result = payload
         # try:
         #     result = '.'.join(str(ord(c)) for c in payload)
@@ -101,7 +81,7 @@ def decompress_payload(payload):
         #     result = payload
     return result
 
-def sort_resources(collection_one, collection_two):
+def sort_resources(warc_one_expanded, warc_two_expanded):
     """
     sorting dictionaries of collections into:
         - missing (no longer available),
@@ -111,37 +91,52 @@ def sort_resources(collection_one, collection_two):
 
     missing_resources, added_resources, common_resources = dict(), dict(), dict()
 
-    for key in collection_one.keys():
-        set_a = set(collection_one[key])
-        set_b = set(collection_two[key])
+    for key in warc_one_expanded.keys():
+        set_a = set(warc_one_expanded[key])
+        set_b = set(warc_two_expanded[key])
         common_resources[key] = list(set_a & set_b)
         missing_resources[key] = list(set_a - set_b)
         added_resources[key] = list(set_b - set_a)
 
     return missing_resources, added_resources, common_resources
 
+def get_payload_headers(payload):
+    header_dict = dict()
+    headers = payload.split('\r\n\r\n')[0].split('\n')
+    for head in headers:
+        if ":" in head:
+            key,val = head.split(": ",1)
+            header_dict[key] = val
+    return header_dict
 
-def get_warc_parts(warc_path, submitted_url):
+def expand_warc(warc_path):
+    """
+    expand warcs into dicts with compressed responses
+    organized by content type
+    """
     warc_open = warc.open(warc_path)
-    response_urls, css, js = dict(), dict(), dict()
-    payload = ''
-
+    responses = dict()
     for record in warc_open:
         if record.type == 'response':
-            path = urlparse.urlparse(record.url).path
-            ext = os.path.splitext(path)[1]
-            if record.url[:-1] == submitted_url or record.url == submitted_url:
-                payload = decompress_payload(record.payload.read())
-                ext = 'index'
+            payload = record.payload.read()
+            headers = get_payload_headers(payload)
+            content_type = headers['Content-Type']
+            """
+                Each record consists of compressed payload and SHA1
+            """
+            new_record =  {
+                'payload' : payload,
+                'hash': record.header.get('warc-payload-digest'),
+            }
 
-            if ext == ".css":
-                css[record.url] = decompress_payload(record.payload.read())
-            if ext == ".js":
-                js[record.url] = decompress_payload(record.payload.read())
-
-            if ext in response_urls:
-                response_urls[ext].append(record.url)
+            if content_type in responses:
+                responses[content_type][record.url] = new_record
             else:
-                response_urls[ext] = [record.url]
+                responses[content_type] = { record.url: new_record }
 
-    return payload, css, js, response_urls
+    return responses
+
+def find_resource_by_url(urlpath, expanded_warc):
+    for content_type in expanded_warc:
+        if urlpath in expanded_warc[content_type]:
+            return expanded_warc[content_type][urlpath]

@@ -1,5 +1,5 @@
 import unittest
-from warc_diff_tools.utils import html_to_text, get_simhash_distance, sort_resources, is_unminified, get_warc_parts
+from warc_diff_tools.utils import *
 from fixtures import *
 
 class TestUtils(unittest.TestCase):
@@ -54,18 +54,9 @@ class TestUtils(unittest.TestCase):
         minified = is_unminified(minified_css, "css")
         self.assertFalse(minified)
 
-    def test_get_warc_parts(self):
+    def x_test_expand_warc(self):
         warc_path = 'tests/example.warc.gz'
-        submitted_url = 'http://example.com/'
-        payload, css, js, response_urls = get_warc_parts(warc_path, submitted_url)
-        self.assertTrue(len(payload) > 0)
-        self.assertTrue('index' in response_urls)
-        # test without appended slash
-        submitted_url = 'http://example.com'
-        payload, css, js, response_urls = get_warc_parts(warc_path, submitted_url)
-        self.assertTrue(len(payload) > 0)
-        self.assertTrue('index' in response_urls)
-        self.assertTrue('<head' in payload)
+        expanded_warc = expand_warc(warc_path)
 
 def main():
     unittest.main()
