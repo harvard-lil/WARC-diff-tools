@@ -1,6 +1,6 @@
 appdirs==1.4.3
-htmldiff==0.23
-minhash==0.0.1
+-e git://github.com/anastasia/htmldiff.git@master#egg=htmldiff
+-e git://github.com/anastasia/minhash.git@master#egg=minhash
 packaging==16.8
 pyparsing==2.2.0
 six==1.10.0

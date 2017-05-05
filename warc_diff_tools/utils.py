@@ -7,7 +7,6 @@ from StringIO import StringIO
 import zlib
 import minhash
 import simhash
-from bs4 import BeautifulSoup
 
 class FakeSocket():
     def __init__(self, response_str):
