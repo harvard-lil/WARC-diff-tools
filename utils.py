@@ -22,8 +22,8 @@ def html_to_text(html_str):
 
 def is_unminified(script_str, type_of_script):
     """
-        if includes newlines, tabs, returns, and more than two spaces,
-        not likely to be minified
+    if includes newlines, tabs, returns, and more than two spaces,
+    not likely to be minified
     """
     whitespaces_found = len(re.compile('\n|\t|\r|\s{2}').findall(script_str)) > 1
 
@@ -91,6 +91,9 @@ def sort_resources(warc_one_expanded, warc_two_expanded):
     return missing_resources, added_resources, common_resources
 
 def get_payload_headers(payload):
+    """
+    return resource's recorded header
+    """
     header_dict = dict()
     headers = payload.split('\r\n\r\n')[0].split('\n')
     for head in headers:
@@ -103,30 +106,48 @@ def expand_warc(warc_path):
     """
     expand warcs into dicts with compressed responses
     organized by content type
+    Each response obj consists of compressed payload and SHA1
     """
     warc_open = warc.open(warc_path)
     responses = dict()
     for record in warc_open:
-        if record.type == 'response':
-            payload = record.payload.read()
-            headers = get_payload_headers(payload)
-            content_type = headers['Content-Type']
-            """
-                Each record consists of compressed payload and SHA1
-            """
-            new_record =  {
-                'payload' : payload,
-                'hash': record.header.get('warc-payload-digest'),
-            }
+        if record.type != 'response':
+            continue
 
-            if content_type in responses:
-                responses[content_type][record.url] = new_record
-            else:
-                responses[content_type] = { record.url: new_record }
+        payload = record.payload.read()
+        headers = get_payload_headers(payload)
+        try:
+            content_type = format_content_type(headers['Content-Type'])
+        except KeyError:
+            # HACK: figure out a better solution for unknown content types
+            content_type = "unknown"
+
+        new_record =  {
+            'payload' : payload,
+            'hash': record.header.get('warc-payload-digest'),
+        }
+
+        if content_type in responses:
+            responses[content_type][record.url] = new_record
+        else:
+            responses[content_type] = { record.url: new_record }
 
     return responses
 
 def find_resource_by_url(urlpath, expanded_warc):
+    """
+    returns { "payload": compressed_payload, "hash":"sha1" }
+    """
     for content_type in expanded_warc:
-        if urlpath in expanded_warc[content_type]:
+        urls = expanded_warc[content_type].keys()
+        if urlpath in urls:
             return expanded_warc[content_type][urlpath]
+
+def format_content_type(content_type):
+    """
+    removes parameter and whitespaces
+    should only return type/subtype
+    e.g. 'text/html' and 'application/javascript'
+    """
+    rx = re.compile('\n|\t|\r')
+    return rx.sub('', content_type).split(';')[0]
