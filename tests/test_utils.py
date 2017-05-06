@@ -54,9 +54,28 @@ class TestUtils(unittest.TestCase):
         minified = is_unminified(minified_css, "css")
         self.assertFalse(minified)
 
-    def x_test_expand_warc(self):
+    def test_expand_warc(self):
         warc_path = 'tests/example.warc.gz'
         expanded_warc = expand_warc(warc_path)
+        content_types = expanded_warc.keys()
+        self.assertTrue("text/html" in content_types)
+        self.assertTrue(len(expanded_warc["text/html"].keys()) > 0)
+
+    def test_find_resource_by_url(self):
+        warc_path = 'tests/example.warc.gz'
+        expanded_warc = expand_warc(warc_path)
+        resource = find_resource_by_url("http://example.com/robots.txt", expanded_warc)
+        self.assertTrue("hash" in resource)
+        self.assertTrue("payload" in resource)
+
+    def test_decompress_payload(self):
+        warc_path = 'tests/example.warc.gz'
+        expanded_warc = expand_warc(warc_path)
+        resource = find_resource_by_url("http://example.com/robots.txt", expanded_warc)
+        compressed_payload = resource["payload"]
+        self.assertFalse("<h1>Example Domain</h1>" in compressed_payload)
+        decompressed_payload = decompress_payload(compressed_payload)
+        self.assertTrue("<h1>Example Domain</h1>" in decompressed_payload)
 
 def main():
     unittest.main()
