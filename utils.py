@@ -42,29 +42,19 @@ def is_unminified(script_str, type_of_script):
 
         return whitespaces_found
 
-def get_comparison(str_one, str_two, algorithm="simhash"):
-    rx = re.compile('\n|\t|\r|\s{2}')
-    cleaned_one = rx.sub(' ', str_one)
-    cleaned_two = rx.sub(' ', str_two)
-
-    if algorithm == "simhash":
-        return get_simhash_distance(str_one, str_two)
-    elif algorithm == "minhash":
-        return minhash.get_minhash(cleaned_one, cleaned_two)
-    elif algorithm == "mix":
-        get_combined_distance(str_one, str_one)
-
-def get_simhash_distance(str_one, str_two):
+def get_simhash_distance(str1, str2):
     try:
-        res = simhash.Simhash(str_one).distance(simhash.Simhash(str_two))
+        res = simhash.Simhash(str1).distance(simhash.Simhash(str2))
     except:
         res = None
         pass
     finally:
         return res
 
+def get_minhash(str1, str2):
+    return minhash.calculate(str1, str2)
 
-def get_combined_distance(str_one, str_two):
+def get_combined_distance(str1, str2):
     return
 
 def decompress_payload(payload):

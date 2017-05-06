@@ -8,14 +8,6 @@ class WARCCompare:
         self.warc2 = utils.expand_warc(warc2_path)
         self.missing_resources, self.added_resources, self.common_resources = utils.sort_resources(self.warc1, self.warc2)
 
-    def has_resource_changed(self, urlpath):
-        """
-        Returns a boolean according to recorded payload hash
-        """
-        resource_one = utils.find_resource_by_url(urlpath, self.warc1)
-        resource_two = utils.find_resource_by_url(urlpath, self.warc2)
-        return resource_one['hash'] == resource_two['hash']
-
     def get_visual_diffs(self, urlpath, style_str=None):
         """
         Returns html text marked up with
@@ -31,15 +23,49 @@ class WARCCompare:
         deleted, inserted, combined = diff.text_diff(decompressed_payload1, decompressed_payload2)
         return deleted, inserted, combined
 
-    def get_similarity(self, content_type):
+    def calculate_similarity(self):
         """
-        For content type javascript, for instance:
-            get minhash similarity of all, get simhash distance
+        - checking all common resources for changes
+        - only including sha1 check for images for now
+        output:
+            { resource_url_path:
+                "hash_change" : True or False (sha1 change)
+                "minhash": minhash_coefficient,
+                "simhash": simhash_distance,
+            }
         """
-        # TODO: WIP!
         # TODO: get combined similarity
-        common_resources_compared = dict()
-        for url in common_resources:
-            common_resources[url] = {minhash:utils.get_minhash(), simhash:utils.get_simhash_distance(warc_one_text, warc_two_text)}
+        compared = dict()
+        start_time = time.time()
+        for content_type in self.common_resources.keys():
+            for url in self.common_resources[content_type]:
+                resource_changed = self.resource_changed(url)
+                compared[url] = {
+                    "hash_change": resource_changed
+                }
 
-        return common_resources_compared
+                if "image" in content_type:
+                    continue
+
+                if resource_changed:
+                    p1 = utils.find_resource_by_url(url, self.warc1)['payload']
+                    p2 = utils.find_resource_by_url(url, self.warc2)['payload']
+
+                    dp1 = utils.decompress_payload(p1)
+                    dp2 = utils.decompress_payload(p2)
+
+                    calculated_minhash = minhash.calculate(dp1, dp2)
+                    calculated_simhash = utils.get_simhash_distance(dp1, dp2)
+
+                    compared[url]['minhash'] = utils.get_minhash(dp1, dp2)
+                    compared[url]['simhash'] = utils.get_simhash_distance(dp1, dp2)
+
+        return compared
+
+    def resource_changed(self, urlpath):
+        """
+        Returns a boolean according to recorded payload hash
+        """
+        resource_one = utils.find_resource_by_url(urlpath, self.warc1)
+        resource_two = utils.find_resource_by_url(urlpath, self.warc2)
+        return resource_one['hash'] != resource_two['hash']
