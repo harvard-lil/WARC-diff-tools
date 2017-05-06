@@ -54,7 +54,7 @@ def get_comparison(str_one, str_two, algorithm="simhash"):
     elif algorithm == "mix":
         get_combined_distance(str_one, str_one)
 
-def get_simhash_distance(str_one, str_two):
+def get_simhash_distance(str1, str2):
     try:
         res = simhash.Simhash(str_one).distance(simhash.Simhash(str_two))
     except:
@@ -63,8 +63,10 @@ def get_simhash_distance(str_one, str_two):
     finally:
         return res
 
+def get_minhash(str1, str2):
+    return minhash.calculate(str1, str2)
 
-def get_combined_distance(str_one, str_two):
+def get_combined_distance(str1, str2):
     return
 
 def decompress_payload(payload):
