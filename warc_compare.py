@@ -1,4 +1,3 @@
-import settings
 import sys
 from htmldiff import diff
 import utils
