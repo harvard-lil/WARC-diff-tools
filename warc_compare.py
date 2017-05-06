@@ -1,3 +1,4 @@
+import time
 import sys
 from htmldiff import diff
 import utils
@@ -53,9 +54,6 @@ class WARCCompare:
 
                     dp1 = utils.decompress_payload(p1)
                     dp2 = utils.decompress_payload(p2)
-
-                    calculated_minhash = minhash.calculate(dp1, dp2)
-                    calculated_simhash = utils.get_simhash_distance(dp1, dp2)
 
                     compared[url]['minhash'] = utils.get_minhash(dp1, dp2)
                     compared[url]['simhash'] = utils.get_simhash_distance(dp1, dp2)
