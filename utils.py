@@ -42,18 +42,6 @@ def is_unminified(script_str, type_of_script):
 
         return whitespaces_found
 
-def get_comparison(str_one, str_two, algorithm="simhash"):
-    rx = re.compile('\n|\t|\r|\s{2}')
-    cleaned_one = rx.sub(' ', str_one)
-    cleaned_two = rx.sub(' ', str_two)
-
-    if algorithm == "simhash":
-        return get_simhash_distance(str_one, str_two)
-    elif algorithm == "minhash":
-        return minhash.get_minhash(cleaned_one, cleaned_two)
-    elif algorithm == "mix":
-        get_combined_distance(str_one, str_one)
-
 def get_simhash_distance(str1, str2):
     try:
         res = simhash.Simhash(str_one).distance(simhash.Simhash(str_two))
