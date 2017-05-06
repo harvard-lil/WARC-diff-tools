@@ -44,7 +44,7 @@ def is_unminified(script_str, type_of_script):
 
 def get_simhash_distance(str1, str2):
     try:
-        res = simhash.Simhash(str_one).distance(simhash.Simhash(str_two))
+        res = simhash.Simhash(str1).distance(simhash.Simhash(str2))
     except:
         res = None
         pass
