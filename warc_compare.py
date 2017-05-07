@@ -7,7 +7,15 @@ class WARCCompare:
     def __init__(self, warc1_path, warc2_path):
         self.warc1 = utils.expand_warc(warc1_path)
         self.warc2 = utils.expand_warc(warc2_path)
-        self.missing_resources, self.added_resources, self.common_resources = utils.sort_resources(self.warc1, self.warc2)
+
+        missing, added, modified, unchanged = utils.sort_resources(self.warc1, self.warc2)
+
+        self.resources = {
+            'missing': missing,
+            'added': added,
+            'modified': modified,
+            'unchanged': unchanged,
+        }
 
     def get_visual_diffs(self, urlpath, style_str=None):
         """

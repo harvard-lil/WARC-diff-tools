@@ -21,24 +21,54 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(distance, 0)
 
     def test_sort_resources(self):
-        collection_one = {
-            '.png': ['img.png', 'img2.png'],
-            '.js': ['script.js'],
-            '.jpg': ['img.jpg'],
+        w1 = {
+            'text/html': {
+                'index.html': {
+                    'payload': 'text - html',
+                    'hash': '101'
+                }
+            },
+            'image/png': {
+                'img.png': {
+                    'payload': 'image - png',
+                    'hash': '123',
+                },
+            },
+            'application/javascript': {
+                'script.js': {
+                    'payload': 'js',
+                    'hash': 'abc',
+                }
+            },
         }
 
-        collection_two = {
-            '.png': ['img2.png', 'img3.png'],
-            '.js': ['script.js'],
-            '.jpg': ['img5.jpg'],
+
+        w2 = {
+            'image/png': {
+                'img2.png': {
+                    'payload': 'image - png2',
+                    'hash': '234',
+                },
+            },
+            'application/javascript': {
+                'script.js': {
+                    'payload': 'app - js',
+                    'hash': 'abc',
+                }
+            },
+            'text/html': {
+                'index.html': {
+                    'payload': 'text - html',
+                    'hash': '111'
+                }
+            }
         }
 
-        missing, added, common = sort_resources(collection_one, collection_two)
-
-        self.assertTrue('img.png' in missing['.png'])
-        self.assertTrue('img2.png' not in missing['.png'])
-        self.assertTrue('img5.jpg' in added['.jpg'])
-        self.assertEqual(['script.js'], common['.js'])
+        missing, added, modified, unchanged = sort_resources(w1, w2)
+        self.assertTrue('index.html' in modified['text/html'])
+        self.assertTrue('img.png' in missing['image/png'])
+        self.assertTrue('img2.png' in added['image/png'])
+        self.assertEqual(['script.js'], unchanged['application/javascript'])
 
     def test_is_minified(self):
         minified = is_unminified(unminified_script, "js")
