@@ -71,24 +71,49 @@ def decompress_payload(payload):
         #     result = payload
     return result
 
-def sort_resources(warc_one_expanded, warc_two_expanded):
+def sort_resources(warc1_expanded, warc2_expanded):
     """
     sorting dictionaries of collections into:
-        - missing (no longer available),
-        - added (newly added since first capture), and
-        - common (seen in both)
+        - missing (no longer available)
+        - added (newly added since first capture)
+        - modified (common resources that whose hashes are unequal)
+        - unchanged
     """
 
-    missing_resources, added_resources, common_resources = dict(), dict(), dict()
+    missing, added, modified, unchanged = dict(), dict(), dict(), dict()
 
-    for key in warc_one_expanded.keys():
-        set_a = set(warc_one_expanded[key])
-        set_b = set(warc_two_expanded[key])
-        common_resources[key] = list(set_a & set_b)
-        missing_resources[key] = list(set_a - set_b)
-        added_resources[key] = list(set_b - set_a)
+    for key in warc1_expanded.keys():
+        if key not in warc2_expanded.keys():
+            missing[key] = set(warc1_expanded[key])
+        else:
+            set_a = set(warc1_expanded[key])
+            set_b = set(warc2_expanded[key])
 
-    return missing_resources, added_resources, common_resources
+            common = list(set_a & set_b)
+
+            missing[key] = list(set_a - set_b)
+            added[key] = list(set_b - set_a)
+
+            if len(missing[key]) == 0:
+                missing.pop('key', None)
+
+            if len(added[key]) == 0:
+                missing.pop('key', None)
+
+            for url in common:
+                hashes_are_equal = warc1_expanded[key][url]['hash'] == warc2_expanded[key][url]['hash']
+                if hashes_are_equal:
+                    if key in unchanged:
+                        unchanged[key].append(url)
+                    else:
+                        unchanged[key] = [url]
+                else:
+                    if key in modified:
+                        modified[key].append(url)
+                    else:
+                        modified[key] = [url]
+
+    return missing, added, modified, unchanged
 
 def get_payload_headers(payload):
     """
