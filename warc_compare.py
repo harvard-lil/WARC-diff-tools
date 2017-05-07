@@ -46,8 +46,8 @@ class WARCCompare:
         # TODO: get combined similarity
         compared = dict()
         start_time = time.time()
-        for content_type in self.common_resources.keys():
-            for url in self.common_resources[content_type]:
+        for content_type in self.modified.keys():
+            for url in self.modified[content_type]:
                 resource_changed = self.resource_changed(url)
                 compared[url] = {
                     "hash_change": resource_changed
