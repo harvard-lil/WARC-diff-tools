@@ -56,6 +56,11 @@ def get_simhash_distance(str1, str2):
         pass
     finally:
         return res
+def process_text(text, content_type="text", process_text_ruleset=0):
+    # TODO: add rules per content_type
+    rx = re.compile('\s{2}')
+    text = rx.sub('', text)
+    return text.lower()
 
 def get_minhash(str1, str2):
     return minhash.calculate(str1, str2)
