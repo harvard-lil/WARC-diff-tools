@@ -9,6 +9,7 @@ import zlib
 import minhash
 from simhash import simhash
 import hashlib
+from toggles import RULESETS
 
 class FakeSocket():
     def __init__(self, response_str):
