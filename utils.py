@@ -20,27 +20,33 @@ def html_to_text(html_str):
     [s.extract() for s in soup('script')]
     return soup.body.getText()
 
-def is_unminified(script_str, type_of_script):
+def is_minified(script):
     """
-    if includes newlines, tabs, returns, and more than two spaces,
+    !!! HACKY APPROXIMATION !!!
+    - if has high line count and low char count
+      and if includes newlines, tabs, returns, and more than two spaces,
+    in second half of script (allowing for copyright notices / authoring comments)
     not likely to be minified
+    - for js if params have chars with length > 3, not likely to be minified
     """
-    whitespaces_found = len(re.compile('\n|\t|\r|\s{2}').findall(script_str)) > 1
+    high_char_count = False
+    halved_script = script[len(script)/2:]
+    whitespaces_found = len(re.compile('\n|\t|\r|\s{2}').findall(halved_script)) > 2
 
-    if type_of_script == "css":
-        return whitespaces_found
+    lines = script.split('\n')
+    low_line_count = len(lines) < 500
 
-    elif type_of_script == "js":
-        # minifiers reduce params to single letters
-        try:
-            params_found = re.compile('function\s+\w+\(\w{3,}').search(script_str).group()
-        except:
-            params_found = None
+    for line in lines:
+        if len(line) > 500:
+            high_char_count = True
+            break
 
-        if params_found:
-            return True
+    try:
+        params_found = re.compile('function\s+\w+\(\w{3,}').search(halved_script).group()
+    except AttributeError:
+        params_found = False
 
-        return whitespaces_found
+    return params_found or not whitespaces_found or (low_line_count and high_char_count)
 
 def get_simhash_distance(str1, str2):
     try:
