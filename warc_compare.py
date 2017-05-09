@@ -62,9 +62,14 @@ class WARCCompare:
 
                     dp1 = utils.decompress_payload(p1)
                     dp2 = utils.decompress_payload(p2)
+                    """
+                    processs text according to content_type rules
+                    """
+                    cleaned_dp1 = utils.process_text(dp1, content_type=content_type)
+                    cleaned_dp2 = utils.process_text(dp2, content_type=content_type)
 
-                    compared[url]['minhash'] = utils.get_minhash(dp1, dp2)
-                    compared[url]['simhash'] = utils.get_simhash_distance(dp1, dp2)
+                    compared[url]['minhash'] = utils.get_minhash(cleaned_dp1, cleaned_dp2)
+                    compared[url]['simhash'] = utils.get_simhash_distance(cleaned_dp1, cleaned_dp2)
 
         return compared
 
