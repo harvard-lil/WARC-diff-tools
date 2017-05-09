@@ -1,0 +1,3 @@
+[submodule "simhash"]
+	path = simhash
+	url = https://github.com/anastasia/simhash
