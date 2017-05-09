@@ -69,7 +69,7 @@ class WARCCompare:
                     cleaned_dp2 = utils.process_text(dp2, content_type=content_type)
 
                     compared[url]['minhash'] = utils.get_minhash(cleaned_dp1, cleaned_dp2)
-                    compared[url]['simhash'] = utils.get_simhash_distance(cleaned_dp1, cleaned_dp2)
+                    compared[url]['simhash'] = utils.get_simhash(cleaned_dp1, cleaned_dp2)
 
         return compared
 

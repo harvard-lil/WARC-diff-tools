@@ -1,15 +1,13 @@
 import os
 import re
-import urlparse
+import zlib
 import warc
 from httplib import HTTPResponse
 from StringIO import StringIO
 from bs4 import BeautifulSoup
-import zlib
-import minhash
 from simhash import simhash
-import hashlib
-from toggles import RULESETS
+import minhash
+import toggles
 
 class FakeSocket():
     def __init__(self, response_str):
@@ -50,44 +48,45 @@ def is_minified(script):
 
     return params_found or not whitespaces_found or (low_line_count and high_char_count)
 
-def get_simhash_distance(str1, str2, content_type='text', ruleset=default_ruleset):
+def get_simhash(str1, str2, simhash_bytes=None, hashfunc=None, shingle_size=None):
+    if not shingle_size:
+        shingle_size = toggles.shingle_size
+
+    if not hashfunc:
+        hashfunc = toggles.hashfunc
+
+    if not simhash_bytes:
+        simhash_bytes = toggles.simhash_bytes
+
+    shingles1 = shingle(str1, shingle_size=shingle_size)
+    shingles2 = shingle(str2, shingle_size=shingle_size)
+
+    simhash1 = simhash.Simhash(shingles1, f=simhash_bytes, hashfunc=hashfunc)
+    simhash2 = simhash.Simhash(shingles2, f=simhash_bytes, hashfunc=hashfunc)
+
+    return simhash1.distance(simhash2), simhash1.distance(simhash2)/float(simhash_bytes)
+
+def shingle(text, shingle_size=None):
     """
-    SHINGLE_TYPE = 'word' or 'char'
-    0. clean (happens outside function)
-    1. tokenize
-    2. for each token:
-        3.a. shingle
-        3.b. hash
-    """
+    tokenizes and shingles
 
-    shingles1 = shingle(str1, content_type, ruleset=ruleset)
-    shingles2 = shingle(str2, content_type, ruleset=ruleset)
-
-    def hashfunc(x):
-        return int(hashlib.sha256(x).hexdigest(), 16)
-
-    simhash1 = simhash.Simhash(shingles1, f=256, hashfunc=hashfunc)
-    simhash2 = simhash.Simhash(shingles2, f=256, hashfunc=hashfunc)
-
-    return simhash1.distance(simhash2), simhash1.distance(simhash2)/256.0
-
-def shingle(text, content_type, ruleset=default_ruleset):
-    """
     chooses window size according to ruleset
     automatically shingles minified css and js by character
     everything else is shingled by word (space)
 
     """
-    shingle_ruleset = ruleset['shingle']
+    if not shingle_size:
+        shingle_size = toggles.shingle_size
+
     shingles = set()
-    if is_unminified(text, content_type):
-        shingle_type = 'word'
-        units = text.split()
-    else:
+    if is_minified(text):
         shingle_type = 'char'
         units = list(text)
+    else:
+        shingle_type = 'word'
+        units = text.split()
 
-    shingle_size = RULESETS['shingle'][shingle_ruleset][shingle_type]
+    shingle_size = shingle_size[shingle_type]
 
     for idx in range(0, len(units) - (shingle_size - 1)):
         if shingle_type == 'word':
