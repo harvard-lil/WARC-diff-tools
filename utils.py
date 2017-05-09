@@ -5,7 +5,7 @@ import warc
 from httplib import HTTPResponse
 from StringIO import StringIO
 from bs4 import BeautifulSoup
-from simhash import simhash
+import simhash
 import minhash
 import toggles
 
