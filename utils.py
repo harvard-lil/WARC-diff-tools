@@ -96,7 +96,7 @@ def shingle(text, content_type, ruleset=default_ruleset):
             shingle = ''.join(units[idx:idx+shingle_size])
 
         shingles.add(shingle)
-    print shingles
+
     return shingles
 
 def process_text(text, content_type="text", process_text_ruleset=0):
