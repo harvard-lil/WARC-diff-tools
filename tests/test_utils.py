@@ -11,13 +11,14 @@ class TestUtils(unittest.TestCase):
         self.assertFalse("<script>" in text_str)
         self.assertFalse("<head>" in text_str)
 
-    def test_get_simhash_distance(self):
-        distance = get_simhash_distance(example_html_str, example_diff_html_str)
+    def test_get_simhash(self):
+        distance = get_simhash(example_html_str, example_diff_html_str)[0]
         self.assertTrue(distance > 0)
 
         example_text = html_to_text(example_html_str)
         example_text_2 = html_to_text(example_diff_html_str)
-        distance = get_simhash_distance(example_text, example_text_2)
+
+        distance = get_simhash(example_text, example_text_2)[0]
         self.assertEqual(distance, 0)
 
     def test_sort_resources(self):
@@ -71,18 +72,18 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(['script.js'], unchanged['application/javascript'])
 
     def test_is_minified(self):
-        minified = is_unminified(unminified_script, "js")
-        self.assertTrue(minified)
-        minified = is_unminified(minified_script, "js")
+        minified = is_minified(unminified_script)
         self.assertFalse(minified)
-        minified = is_unminified(unminified_script2, "js")
+        minified = is_minified(minified_script)
         self.assertTrue(minified)
-        minified = is_unminified(minified_script2, "js")
+        minified = is_minified(unminified_script2)
         self.assertFalse(minified)
-        minified = is_unminified(unminified_css, "css")
+        minified = is_minified(minified_script2)
         self.assertTrue(minified)
-        minified = is_unminified(minified_css, "css")
+        minified = is_minified(unminified_css)
         self.assertFalse(minified)
+        minified = is_minified(minified_css)
+        self.assertTrue(minified)
 
     def test_expand_warc(self):
         warc_path = 'tests/example.warc.gz'
