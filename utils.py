@@ -7,7 +7,8 @@ from StringIO import StringIO
 from bs4 import BeautifulSoup
 import zlib
 import minhash
-import simhash
+from simhash import simhash
+import hashlib
 
 class FakeSocket():
     def __init__(self, response_str):
@@ -48,14 +49,55 @@ def is_minified(script):
 
     return params_found or not whitespaces_found or (low_line_count and high_char_count)
 
-def get_simhash_distance(str1, str2):
-    try:
-        res = simhash.Simhash(str1).distance(simhash.Simhash(str2))
-    except:
-        res = None
-        pass
-    finally:
-        return res
+def get_simhash_distance(str1, str2, content_type='text', ruleset=default_ruleset):
+    """
+    SHINGLE_TYPE = 'word' or 'char'
+    0. clean (happens outside function)
+    1. tokenize
+    2. for each token:
+        3.a. shingle
+        3.b. hash
+    """
+
+    shingles1 = shingle(str1, content_type, ruleset=ruleset)
+    shingles2 = shingle(str2, content_type, ruleset=ruleset)
+
+    def hashfunc(x):
+        return int(hashlib.sha256(x).hexdigest(), 16)
+
+    simhash1 = simhash.Simhash(shingles1, f=256, hashfunc=hashfunc)
+    simhash2 = simhash.Simhash(shingles2, f=256, hashfunc=hashfunc)
+
+    return simhash1.distance(simhash2), simhash1.distance(simhash2)/256.0
+
+def shingle(text, content_type, ruleset=default_ruleset):
+    """
+    chooses window size according to ruleset
+    automatically shingles minified css and js by character
+    everything else is shingled by word (space)
+
+    """
+    shingle_ruleset = ruleset['shingle']
+    shingles = set()
+    if is_unminified(text, content_type):
+        shingle_type = 'word'
+        units = text.split()
+    else:
+        shingle_type = 'char'
+        units = list(text)
+
+    shingle_size = RULESETS['shingle'][shingle_ruleset][shingle_type]
+
+    for idx in range(0, len(units) - (shingle_size - 1)):
+        if shingle_type == 'word':
+            shingle = ' '.join(units[idx:idx+shingle_size])
+        else:
+            shingle = ''.join(units[idx:idx+shingle_size])
+
+        shingles.add(shingle)
+    print shingles
+    return shingles
+
 def process_text(text, content_type="text", process_text_ruleset=0):
     # TODO: add rules per content_type
     rx = re.compile('\s{2}')
