@@ -1,6 +1,7 @@
-import time
 import sys
 from htmldiff import diff
+
+from toggles import shingle_settings
 import utils
 
 class WARCCompare:
@@ -23,8 +24,8 @@ class WARCCompare:
         1. deletions, 2. insertions, & 3. both deletions & insertions
         """
         # TODO: should be able to take in any input (html or not) and spit out html
-        payload1 = utils.find_resource_by_url(urlpath, self.warc1)
-        payload2 = utils.find_resource_by_url(urlpath, self.warc2)
+        payload1 = utils.get_payload(urlpath, self.warc1)
+        payload2 = utils.get_payload(urlpath, self.warc2)
 
         decompressed_payload1 = utils.decompress_payload(payload1)
         decompressed_payload2 = utils.decompress_payload(payload2)
@@ -32,7 +33,7 @@ class WARCCompare:
         deleted, inserted, combined = diff.text_diff(decompressed_payload1, decompressed_payload2)
         return deleted, inserted, combined
 
-    def calculate_similarity(self):
+    def calculate_similarity(self, shingle_settings=shingle_settings):
         """
         - checking all common resources for changes
         - only including sha1 check for images for now
@@ -43,9 +44,7 @@ class WARCCompare:
                 "simhash": simhash_distance,
             }
         """
-        # TODO: get combined similarity
         compared = dict()
-        start_time = time.time()
         for content_type in self.resources['modified'].keys():
             for url in self.resources['modified'][content_type]:
                 resource_changed = self.resource_changed(url)
@@ -57,14 +56,21 @@ class WARCCompare:
                     continue
 
                 if resource_changed:
-                    p1 = utils.find_resource_by_url(url, self.warc1)['payload']
-                    p2 = utils.find_resource_by_url(url, self.warc2)['payload']
+                    p1 = utils.get_payload(url, self.warc1)
+                    p2 = utils.get_payload(url, self.warc2)
 
                     dp1 = utils.decompress_payload(p1)
                     dp2 = utils.decompress_payload(p2)
 
-                    compared[url]['minhash'] = utils.get_minhash(dp1, dp2)
-                    compared[url]['simhash'] = utils.get_simhash_distance(dp1, dp2)
+                    cleaned_dp1 = utils.process_text(dp1)
+                    cleaned_dp2 = utils.process_text(dp2)
+
+                    # shingle cleaned text
+                    shingles1 = utils.shingle(cleaned_dp1, shingle_settings=shingle_settings)
+                    shingles2 = utils.shingle(cleaned_dp2, shingle_settings=shingle_settings)
+
+                    compared[url]['minhash'] = utils.get_minhash(shingles1, shingles2)
+                    compared[url]['simhash'] = utils.get_simhash(shingles1, shingles2)
 
         return compared
 

@@ -1,13 +1,13 @@
 import os
 import re
-import urlparse
+import zlib
 import warc
 from httplib import HTTPResponse
 from StringIO import StringIO
 from bs4 import BeautifulSoup
-import zlib
-import minhash
 import simhash
+import minhash
+from toggles import hashfunc, simhash_bytes, shingle_settings, minhash_hash_num
 
 class FakeSocket():
     def __init__(self, response_str):
@@ -20,39 +20,83 @@ def html_to_text(html_str):
     [s.extract() for s in soup('script')]
     return soup.body.getText()
 
-def is_unminified(script_str, type_of_script):
+def is_minified(script):
     """
-    if includes newlines, tabs, returns, and more than two spaces,
+    !!! HACKY APPROXIMATION !!!
+    - if has high line count and low char count
+      and if includes newlines, tabs, returns, and more than two spaces,
+    in second half of script (allowing for copyright notices / authoring comments)
     not likely to be minified
+    - for js if params have chars with length > 3, not likely to be minified
     """
-    whitespaces_found = len(re.compile('\n|\t|\r|\s{2}').findall(script_str)) > 1
+    high_char_count = False
+    halved_script = script[len(script)/2:]
+    whitespaces_found = len(re.compile('\n|\t|\r|\s{2}').findall(halved_script)) > 2
 
-    if type_of_script == "css":
-        return whitespaces_found
+    lines = script.split('\n')
+    low_line_count = len(lines) < 500
 
-    elif type_of_script == "js":
-        # minifiers reduce params to single letters
-        try:
-            params_found = re.compile('function\s+\w+\(\w{3,}').search(script_str).group()
-        except:
-            params_found = None
+    for line in lines:
+        if len(line) > 500:
+            high_char_count = True
+            break
 
-        if params_found:
-            return True
-
-        return whitespaces_found
-
-def get_simhash_distance(str1, str2):
     try:
-        res = simhash.Simhash(str1).distance(simhash.Simhash(str2))
-    except:
-        res = None
-        pass
-    finally:
-        return res
+        params_found = re.compile('function\s+\w+\(\w{3,}').search(halved_script).group()
+    except AttributeError:
+        params_found = False
+
+    return params_found or not whitespaces_found or (low_line_count and high_char_count)
+
+def get_simhash(shingles1, shingles2, simhash_bytes=simhash_bytes, hashfunc=hashfunc):
+    simhash1 = simhash.Simhash(shingles1, f=simhash_bytes, hashfunc=hashfunc)
+    simhash2 = simhash.Simhash(shingles2, f=simhash_bytes, hashfunc=hashfunc)
+
+    return simhash1.distance(simhash2), simhash1.distance(simhash2)/float(simhash_bytes)
+
+def shingle(text, shingle_settings=shingle_settings):
+    """
+    tokenizes and shingles
+
+    chooses window size according to ruleset
+    automatically shingles minified css and js by character
+    everything else is shingled by word (space)
+
+    """
+    shingles = set()
+
+    if is_minified(text):
+        shingle_type = 'char'
+        units = list(text)
+    else:
+        shingle_type = 'word'
+        units = text.split()
+
+    shingle_size = shingle_settings[shingle_type]
+
+    for idx in range(0, len(units) - (shingle_size - 1)):
+        if shingle_type == 'word':
+            shingle = ' '.join(units[idx:idx+shingle_size])
+        else:
+            shingle = ''.join(units[idx:idx+shingle_size])
+
+        shingles.add(shingle)
+
+    return shingles
+
+def process_text(text):
+    # TODO: add rules per content_type
+    rx = re.compile('\s{2}')
+    text = rx.sub('', text)
+    try:
+
+        text = unicode(text, 'utf-8').encode('utf-8').decode('utf-8', 'ignore')
+    except UnicodeEncodeError:
+        import ipdb; ipdb.set_trace()
+    return text.lower()
 
 def get_minhash(str1, str2):
-    return minhash.calculate(str1, str2)
+    return minhash.calculate(str1, str2, total_hash_num=minhash_hash_num)
 
 def get_combined_distance(str1, str2):
     return
@@ -167,6 +211,9 @@ def find_resource_by_url(urlpath, expanded_warc):
         urls = expanded_warc[content_type].keys()
         if urlpath in urls:
             return expanded_warc[content_type][urlpath]
+
+def get_payload(urlpath, expanded_warc):
+    return find_resource_by_url(urlpath, expanded_warc)['payload']
 
 def format_content_type(content_type):
     """

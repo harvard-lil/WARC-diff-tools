@@ -1,7 +1,7 @@
 appdirs==1.4.3
-beautifulsoup4==4.5.3
+beautifulsoup4==4.6.0
 -e git://github.com/anastasia/htmldiff.git@0de62e5a2dc6dc51220749a76419997e65773a2c#egg=htmldiff
--e git://github.com/anastasia/minhash.git@06de063fa67d190cb56320007a1245a22994fbfb#egg=minhash
+-e git://github.com/anastasia/minhash.git@c0a8c56ca4f128f723a90481af0a3c4366ec8e98#egg=minhash
 packaging==16.8
 pyparsing==2.2.0
 simhash==1.7.1
