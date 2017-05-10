@@ -2,6 +2,7 @@ import os
 import re
 import zlib
 import warc
+import difflib
 from httplib import HTTPResponse
 from StringIO import StringIO
 from bs4 import BeautifulSoup
@@ -52,7 +53,7 @@ def get_simhash(shingles1, shingles2, simhash_bytes=simhash_bytes, hashfunc=hash
     simhash1 = simhash.Simhash(shingles1, f=simhash_bytes, hashfunc=hashfunc)
     simhash2 = simhash.Simhash(shingles2, f=simhash_bytes, hashfunc=hashfunc)
 
-    return simhash1.distance(simhash2), simhash1.distance(simhash2)/float(simhash_bytes)
+    return simhash1.distance(simhash2), 1 - (simhash1.distance(simhash2)/float(simhash_bytes))
 
 def shingle(text, shingle_settings=shingle_settings):
     """
@@ -223,3 +224,7 @@ def format_content_type(content_type):
     """
     rx = re.compile('\n|\t|\r')
     return rx.sub('', content_type).split(';')[0]
+
+def sequence_match(s1, s2):
+    seq = difflib.SequenceMatcher(None, s1, s2)
+    return seq.ratio() * 100

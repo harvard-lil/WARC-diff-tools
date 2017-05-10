@@ -33,7 +33,7 @@ class WARCCompare:
         deleted, inserted, combined = diff.text_diff(decompressed_payload1, decompressed_payload2)
         return deleted, inserted, combined
 
-    def calculate_similarity(self, shingle_settings=shingle_settings):
+    def calculate_similarity(self, minhash=True, simhash=True, sequence_match=True, shingle_settings=shingle_settings):
         """
         - checking all common resources for changes
         - only including sha1 check for images for now
@@ -47,30 +47,34 @@ class WARCCompare:
         compared = dict()
         for content_type in self.resources['modified'].keys():
             for url in self.resources['modified'][content_type]:
-                resource_changed = self.resource_changed(url)
-                compared[url] = {
-                    "hash_change": resource_changed
-                }
+                # TODO: remove? Resources won't be in modified list
+                # if they don't have a hash change
+                compared[url] = { "hash_change": True }
 
                 if "image" in content_type:
                     continue
 
-                if resource_changed:
-                    p1 = utils.get_payload(url, self.warc1)
-                    p2 = utils.get_payload(url, self.warc2)
+                p1 = utils.get_payload(url, self.warc1)
+                p2 = utils.get_payload(url, self.warc2)
 
-                    dp1 = utils.decompress_payload(p1)
-                    dp2 = utils.decompress_payload(p2)
+                dp1 = utils.decompress_payload(p1)
+                dp2 = utils.decompress_payload(p2)
 
-                    cleaned_dp1 = utils.process_text(dp1)
-                    cleaned_dp2 = utils.process_text(dp2)
+                cleaned_dp1 = utils.process_text(dp1)
+                cleaned_dp2 = utils.process_text(dp2)
 
-                    # shingle cleaned text
-                    shingles1 = utils.shingle(cleaned_dp1, shingle_settings=shingle_settings)
-                    shingles2 = utils.shingle(cleaned_dp2, shingle_settings=shingle_settings)
+                # shingle cleaned text
+                shingles1 = utils.shingle(cleaned_dp1, shingle_settings=shingle_settings)
+                shingles2 = utils.shingle(cleaned_dp2, shingle_settings=shingle_settings)
 
+                if minhash:
                     compared[url]['minhash'] = utils.get_minhash(shingles1, shingles2)
+
+                if simhash:
                     compared[url]['simhash'] = utils.get_simhash(shingles1, shingles2)
+
+                if sequence_match:
+                    compared[url]['sequence_matched'] = utils.sequence_match(cleaned_dp1, cleaned_dp2)
 
         return compared
 
