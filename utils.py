@@ -90,10 +90,10 @@ def process_text(text):
     rx = re.compile('\s{2}')
     text = rx.sub('', text)
     try:
+        text = unicode(text, 'utf-8')
+    except (UnicodeEncodeError, UnicodeDecodeError) as e:
+        text = text.decode('utf-8', 'ignore')
 
-        text = unicode(text, 'utf-8').encode('utf-8').decode('utf-8', 'ignore')
-    except UnicodeEncodeError:
-        import ipdb; ipdb.set_trace()
     return text.lower()
 
 def get_minhash(str1, str2):
