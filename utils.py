@@ -168,8 +168,12 @@ def get_payload_headers(payload):
     headers = payload.split('\r\n\r\n')[0].split('\n')
     for head in headers:
         if ":" in head:
-            key,val = head.split(": ",1)
-            header_dict[key] = val
+            try:
+                key,val = head.split(": ",1)
+                header_dict[key] = val
+            except:
+                key = head.split(":", 0)
+                val = ""
     return header_dict
 
 def expand_warc(warc_path):
