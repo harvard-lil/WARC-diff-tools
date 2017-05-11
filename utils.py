@@ -140,10 +140,10 @@ def sort_resources(warc1_expanded, warc2_expanded):
             added[key] = list(set_b - set_a)
 
             if len(missing[key]) == 0:
-                missing.pop('key', None)
+                missing.pop(key, None)
 
             if len(added[key]) == 0:
-                missing.pop('key', None)
+                added.pop(key, None)
 
             for url in common:
                 hashes_are_equal = warc1_expanded[key][url]['hash'] == warc2_expanded[key][url]['hash']
