@@ -78,6 +78,25 @@ class WARCCompare:
 
         return compared
 
+    def count_resources(self):
+        modified = 0
+        unchanged = 0
+        removed = 0
+        added = 0
+        for resource_type in self.resources:
+            for content_type in self.resources[resource_type]:
+                if resource_type == 'modified':
+                    modified += 1
+                elif resource_type == 'added':
+                    added += 1
+                elif resource_type == 'removed':
+                    removed += 1
+                elif resource_type == 'unchanged':
+                    unchanged += 1
+        total = (modified + removed + unchanged, modified + added + unchanged)
+
+        return [total, unchanged, removed, added, modified]
+
     def resource_changed(self, urlpath):
         """
         Returns a boolean according to recorded payload hash
