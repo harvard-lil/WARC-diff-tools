@@ -4,6 +4,6 @@ beautifulsoup4==4.6.0
 -e git://github.com/anastasia/minhash.git@c0a8c56ca4f128f723a90481af0a3c4366ec8e98#egg=minhash
 packaging==16.8
 pyparsing==2.2.0
-simhash==1.7.1
+python-hashes==0.1.dev0
 six==1.10.0
 warc==0.2.1

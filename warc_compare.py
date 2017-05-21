@@ -47,12 +47,7 @@ class WARCCompare:
         compared = dict()
         for content_type in self.resources['modified'].keys():
             for url in self.resources['modified'][content_type]:
-                # TODO: remove? Resources won't be in modified list
-                # if they don't have a hash change
-                compared[url] = { "hash_change": True }
-
-                if "image" in content_type:
-                    continue
+                compared[url] = {}
 
                 p1 = utils.get_payload(url, self.warc1)
                 p2 = utils.get_payload(url, self.warc2)

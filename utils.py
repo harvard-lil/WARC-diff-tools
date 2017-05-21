@@ -6,7 +6,7 @@ import difflib
 from httplib import HTTPResponse
 from StringIO import StringIO
 from bs4 import BeautifulSoup
-import simhash
+from hashes.simhash import simhash
 import minhash
 from toggles import hashfunc, simhash_bytes, shingle_settings, minhash_hash_num
 
@@ -50,10 +50,10 @@ def is_minified(script):
     return params_found or not whitespaces_found or (low_line_count and high_char_count)
 
 def get_simhash(shingles1, shingles2, simhash_bytes=simhash_bytes, hashfunc=hashfunc):
-    simhash1 = simhash.Simhash(shingles1, f=simhash_bytes, hashfunc=hashfunc)
-    simhash2 = simhash.Simhash(shingles2, f=simhash_bytes, hashfunc=hashfunc)
+    sim1 = simhash(shingles1, hashbits=simhash_bytes)
+    sim2 = simhash(shingles2, hashbits=simhash_bytes)
 
-    return simhash1.distance(simhash2), 1 - (simhash1.distance(simhash2)/float(simhash_bytes))
+    return sim1.similarity(sim2)
 
 def shingle(text, shingle_settings=shingle_settings):
     """
@@ -65,12 +65,16 @@ def shingle(text, shingle_settings=shingle_settings):
 
     """
     shingles = set()
+    shingle_type = shingle_settings['shingle_type']
+    if not shingle_type:
+        if is_minified(text):
+            shingle_type = 'char'
+        else:
+            shingle_type = 'word'
 
-    if is_minified(text):
-        shingle_type = 'char'
+    if shingle_type == 'char':
         units = list(text)
     else:
-        shingle_type = 'word'
         units = text.split()
 
     shingle_size = shingle_settings[shingle_type]
@@ -190,6 +194,7 @@ def expand_warc(warc_path):
 
         payload = record.payload.read()
         headers = get_payload_headers(payload)
+
         try:
             content_type = format_content_type(headers['Content-Type'])
         except KeyError:
@@ -198,6 +203,7 @@ def expand_warc(warc_path):
 
         new_record =  {
             'payload' : payload,
+            'headers': headers,
             'hash': record.header.get('warc-payload-digest'),
         }
 
