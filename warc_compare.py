@@ -77,7 +77,10 @@ class WARCCompare:
         nums = dict(modified=0, unchanged=0, missing=0, added=0)
 
         for resource_type in self.resources:
-            nums[resource_type] += len(sum(self.resources[resource_type].values(), []))
+            count = 0
+            for content_type in self.resources[resource_type]:
+                count += len(self.resources[resource_type][content_type])
+            nums[resource_type] = count
 
         old_total = nums['modified'] + nums['missing'] + nums['unchanged']
         new_total = nums['modified'] + nums['added'] + nums['unchanged']
