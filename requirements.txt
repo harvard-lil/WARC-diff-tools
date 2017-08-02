@@ -17,7 +17,7 @@ prompt-toolkit==1.0.15
 ptyprocess==0.5.2
 Pygments==2.2.0
 pyparsing==2.2.0
-python-hashes==0.1.dev0
+python-hashes==0.1
 readline==6.2.4.1
 scandir==1.5
 simplegeneric==0.8.1
