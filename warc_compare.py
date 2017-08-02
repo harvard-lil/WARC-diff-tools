@@ -1,8 +1,8 @@
-import sys
 from htmldiff import diff
 
 from toggles import shingle_settings
 import utils
+
 
 class WARCCompare:
     def __init__(self, warc1_path, warc2_path):
@@ -20,24 +20,39 @@ class WARCCompare:
 
     def get_visual_diffs(self, urlpath, style_str=None):
         """
-        Returns html text marked up with
-        1. deletions, 2. insertions, & 3. both deletions & insertions
+        :param urlpath: path of resource to compare
+        :param style_str: css to be included in the head of each created html str
+            example:
+                "<style>
+                    span.diff_insert {background-color: #a0ffa0;}
+                    span.diff_delete {background-color: #ff7827;}
+                </style>"
+
+        :return: html str text marked up with
+            1. deletions,
+            2. insertions, &
+            3. both deletions & insertions
         """
-        # TODO: should be able to take in any input (html or not) and spit out html
         payload1 = utils.get_payload(urlpath, self.warc1)
         payload2 = utils.get_payload(urlpath, self.warc2)
 
         decompressed_payload1 = utils.decompress_payload(payload1)
         decompressed_payload2 = utils.decompress_payload(payload2)
 
-        deleted, inserted, combined = diff.text_diff(decompressed_payload1, decompressed_payload2)
+        deleted, inserted, combined = diff.text_diff(decompressed_payload1, decompressed_payload2, style_str=style_str)
         return deleted, inserted, combined
 
     def calculate_similarity(self, minhash=True, simhash=True, sequence_match=True, shingle_settings=shingle_settings):
         """
-        - checking all common resources for changes
-        - only including sha1 check for images for now
-        output:
+        checking all common resources for changes
+        image checking is broken for now, requires a separate handling
+
+        :param minhash: True or False, default True
+        :param simhash: True or False, default True
+        :param sequence_match: True or False, default True
+        :param shingle_settings: see `shingle_settings` in toggles.py
+
+        :return:
             { resource_url_path:
                 "hash_change" : True or False (sha1 change)
                 "minhash": minhash_coefficient,
