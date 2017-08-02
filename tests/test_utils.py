@@ -12,14 +12,14 @@ class TestUtils(unittest.TestCase):
         self.assertFalse("<head>" in text_str)
 
     def test_get_simhash(self):
-        distance = get_simhash(example_html_str, example_diff_html_str)[0]
-        self.assertTrue(distance > 0)
+        similarity = get_simhash(example_html_str, example_diff_html_str)
+        self.assertTrue(similarity > 0)
 
         example_text = html_to_text(example_html_str)
         example_text_2 = html_to_text(example_diff_html_str)
 
-        distance = get_simhash(example_text, example_text_2)[0]
-        self.assertEqual(distance, 0)
+        similarity = get_simhash(example_text, example_text_2)
+        self.assertEqual(similarity, 1.0)
 
     def test_sort_resources(self):
         w1 = {
