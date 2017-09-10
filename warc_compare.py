@@ -42,7 +42,24 @@ class WARCCompare:
         deleted, inserted, combined = diff.text_diff(decompressed_payload1, decompressed_payload2, style_str=style_str)
         return deleted, inserted, combined
 
-    def calculate_similarity(self, minhash=True, simhash=True, sequence_match=True, shingle_settings=shingle_settings):
+    def calculate_similarity(self, url_pairs=[], minhash=True, simhash=True, sequence_match=True, shingle_settings=shingle_settings):
+        compared = dict()
+        if len(url_pairs) > 0:
+            for pair in url_pairs:
+                results = self.calculate_similarity_pair(urls=pair, minhash=minhash, simhash=simhash, sequence_match=sequence_match, shingle_settings=shingle_settings)
+                url_str = "%s_%s" % (pair[0],pair[1])
+                compared[url_str] = results
+        else:
+            for content_type in self.resources['modified'].keys():
+                for url in self.resources['modified'][content_type]:
+                    pair = (url, url)
+                    results = self.calculate_similarity_pair(urls=pair, minhash=minhash, simhash=simhash, sequence_match=sequence_match,
+                                         shingle_settings=shingle_settings)
+
+                    compared[url] = results
+        return compared
+
+    def calculate_similarity_pair(self, urls=(), minhash=True, simhash=True, sequence_match=True, shingle_settings=shingle_settings):
         """
         checking all common resources for changes
         image checking is broken for now, requires a separate handling
@@ -60,31 +77,28 @@ class WARCCompare:
             }
         """
         compared = dict()
-        for content_type in self.resources['modified'].keys():
-            for url in self.resources['modified'][content_type]:
-                compared[url] = {}
 
-                p1 = utils.get_payload(url, self.warc1)
-                p2 = utils.get_payload(url, self.warc2)
+        p1 = utils.get_payload(urls[0], self.warc1)
+        p2 = utils.get_payload(urls[1], self.warc2)
 
-                dp1 = utils.decompress_payload(p1)
-                dp2 = utils.decompress_payload(p2)
+        dp1 = utils.decompress_payload(p1)
+        dp2 = utils.decompress_payload(p2)
 
-                cleaned_dp1 = utils.process_text(dp1)
-                cleaned_dp2 = utils.process_text(dp2)
+        cleaned_dp1 = utils.process_text(dp1)
+        cleaned_dp2 = utils.process_text(dp2)
 
-                # shingle cleaned text
-                shingles1 = utils.shingle(cleaned_dp1, shingle_settings=shingle_settings)
-                shingles2 = utils.shingle(cleaned_dp2, shingle_settings=shingle_settings)
+        # shingle cleaned text
+        shingles1 = utils.shingle(cleaned_dp1, shingle_settings=shingle_settings)
+        shingles2 = utils.shingle(cleaned_dp2, shingle_settings=shingle_settings)
 
-                if minhash:
-                    compared[url]['minhash'] = utils.get_minhash(shingles1, shingles2)
+        if minhash:
+            compared['minhash'] = utils.get_minhash(shingles1, shingles2)
 
-                if simhash:
-                    compared[url]['simhash'] = utils.get_simhash(shingles1, shingles2)
+        if simhash:
+            compared['simhash'] = utils.get_simhash(shingles1, shingles2)
 
-                if sequence_match:
-                    compared[url]['sequence_matched'] = utils.sequence_match(cleaned_dp1, cleaned_dp2)
+        if sequence_match:
+            compared['sequence_matched'] = utils.sequence_match(cleaned_dp1, cleaned_dp2)
 
         return compared
 

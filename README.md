@@ -48,6 +48,11 @@ Calculate similarity of all WARC responses using minhash, simhash, and sequence 
 >> wc.calculate_similarity()
 ```
 
+Calculate the similarity of resources with dissimilar urls by passing in a list of url pairs
+```
+>> wc.calculate_similarity(url_pairs=[('path/to/older_url1', 'path/to/newer_url2'), ('path/to/older_url3', 'path/to/newer_url4'), ])
+```
+
 Calculate just the minhash value of all WARC responses:
 ```
 >> wc.calculate_similarity(simhash=False, sequence_match=False)
