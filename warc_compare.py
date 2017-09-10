@@ -1,4 +1,4 @@
-from htmldiff import diff
+from htmldiffer import diff
 
 from toggles import shingle_settings
 import utils
@@ -38,11 +38,10 @@ class WARCCompare:
 
         decompressed_payload1 = utils.decompress_payload(payload1)
         decompressed_payload2 = utils.decompress_payload(payload2)
+        d = diff.HTMLDiffer(decompressed_payload1, decompressed_payload2, style_str=style_str)
+        return d.deleted_diff, d.inserted_diff, d.combined_diff
 
-        deleted, inserted, combined = diff.text_diff(decompressed_payload1, decompressed_payload2, style_str=style_str)
-        return deleted, inserted, combined
-
-    def calculate_similarity(self, url_pairs=[], minhash=True, simhash=True, sequence_match=True, shingle_settings=shingle_settings):
+    def calculate_similarity(self, url_pairs=[], minhash=True, simhash=False, sequence_match=False, shingle_settings=shingle_settings):
         compared = dict()
         if len(url_pairs) > 0:
             for pair in url_pairs:
@@ -59,7 +58,7 @@ class WARCCompare:
                     compared[url] = results
         return compared
 
-    def calculate_similarity_pair(self, urls=(), minhash=True, simhash=True, sequence_match=True, shingle_settings=shingle_settings):
+    def calculate_similarity_pair(self, urls=(), minhash=True, simhash=False, sequence_match=False, shingle_settings=shingle_settings):
         """
         checking all common resources for changes
         image checking is broken for now, requires a separate handling
