@@ -9,7 +9,7 @@ greenlet==0.4.12
 htmldiffer==0.25.1
 ipython==5.4.1
 ipython-genutils==0.2.0
--e git://github.com/anastasia /minhash.git@e8a3bd8f918088b6373a8638d719d61e20673920#egg=minhash
+-e git://github.com/anastasia/minhash.git@e8a3bd8f918088b6373a8638d719d61e20673920#egg=minhash
 packaging==16.8
 pathlib2==2.3.0
 pexpect==4.2.1
