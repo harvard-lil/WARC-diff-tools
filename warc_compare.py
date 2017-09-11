@@ -18,27 +18,26 @@ class WARCCompare:
             'unchanged': unchanged,
         }
 
-    def get_visual_diffs(self, urlpath, style_str=None):
+    def get_visual_diffs(self, urlpath, urlpath2):
         """
         :param urlpath: path of resource to compare
-        :param style_str: css to be included in the head of each created html str
-            example:
-                "<style>
-                    span.diff_insert {background-color: #a0ffa0;}
-                    span.diff_delete {background-color: #ff7827;}
-                </style>"
+        :param urlpath2: path of second resource to compare, if the path is different
 
         :return: html str text marked up with
             1. deletions,
             2. insertions, &
             3. both deletions & insertions
         """
+        if not urlpath2:
+            urlpath2 = urlpath
+
         payload1 = utils.get_payload(urlpath, self.warc1)
-        payload2 = utils.get_payload(urlpath, self.warc2)
+        payload2 = utils.get_payload(urlpath2, self.warc2)
 
         decompressed_payload1 = utils.decompress_payload(payload1)
         decompressed_payload2 = utils.decompress_payload(payload2)
-        d = diff.HTMLDiffer(decompressed_payload1, decompressed_payload2, style_str=style_str)
+        d = diff.HTMLDiffer(decompressed_payload1, decompressed_payload2)
+
         return d.deleted_diff, d.inserted_diff, d.combined_diff
 
     def calculate_similarity(self, url_pairs=[], minhash=True, simhash=False, sequence_match=False, shingle_settings=shingle_settings):
