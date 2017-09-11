@@ -16,14 +16,14 @@ $ pip install -r requirements.txt
 
 ### Examples
 To set up:
-```
+```python
 $ python
 >> from warc_compare import WARCCompare
 >> wc = WARCCompare('path/to/older/warc', '/path/to/newer/warc')
 ```
 
 You now have access to a list of resources in the WARCS:
-```
+```python
 >> wc.resources
 ```
 output is a list of resources split up by the keys:
@@ -64,6 +64,10 @@ Create HTML comparison diffs of a single response:
 ```
 output: HTML with deletions marked up, HTML with insertions marked up, HTML with both deletions and insertions marked up
 
+Create HTML comparison diffs of a single response with two different paths (if the resource has been moved or renamed, for instance):
+```
+>> wc.get_visual_diffs('/path/to/resource', 'path/to/other/resource')
+```
 
 
 
