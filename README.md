@@ -17,7 +17,6 @@ $ pip install -r requirements.txt
 ### Examples
 To set up:
 ```python
-$ python
 >> from warc_compare import WARCCompare
 >> wc = WARCCompare('path/to/older/warc', '/path/to/newer/warc')
 ```
