@@ -1,4 +1,5 @@
 *.pyc
 *.ipynb
-assets/*
 *.idea
+
+*.extras
