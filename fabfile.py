@@ -8,14 +8,9 @@ except Exception as e:
 
 from fabric.api import local
 from fabric.decorators import task
-from django.conf import settings
+
 
 @task(alias='run')
 def run_django():
-    local("python3 manage.py runserver 0.0.0.0:8000")
-
-
-@task
-def test():
-    local("pytest --fail-on-template-vars --cov --cov-report= ")
+    local("python manage.py runserver 0.0.0.0:8000")
 

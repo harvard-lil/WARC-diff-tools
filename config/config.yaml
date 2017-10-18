@@ -1,0 +1,32 @@
+# pywb config file
+# ========================================
+#
+enable_memento: true
+
+collections:
+  perma: memento+http://perma-archives.org/warc/
+  # rhizome (memento)
+  rhiz: memento+http://webenact.rhizome.org/all/
+
+  ia: memento+https://web.archive.org/web/
+# Settings for each collection
+use_js_obj_proxy: true
+
+# Memento support, enable
+enable_memento: true
+
+# Replay content in an iframe
+framed_replay: true
+
+#static_url_path: dashboard/static
+static_path: dashboard/static
+
+static_dir: dashboard/static
+
+templates_dir: dashboard/templates
+banner_html: dashboard/templates/banner.html
+head_insert_html: dashboard/templates/head_insert.html
+frame_insert_html: dashboard/templates/frame_insert.html
+
+# Enable simple http proxy mode
+#enable_http_proxy: true
