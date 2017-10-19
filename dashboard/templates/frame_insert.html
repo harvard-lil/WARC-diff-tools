@@ -19,7 +19,32 @@ html, body
 </head>
 <body style="margin: 0px; padding: 0px;">
 <div id="wb_iframe_div">
-<iframe id="replay_iframe" frameborder="0" seamless="seamless" scrolling="yes" class="wb_iframe"></iframe>
+
+  <iframe id="replay_iframe" frameborder="0" seamless="seamless" scrolling="yes" class="wb_iframe"></iframe>
+{#  <div class="box"><iframe id="iframe_2" frameborder="0" seamless="seamless" scrolling="yes" class="wb_iframe" width="100%" height="512" align="right"></iframe></div>#}
+  <script>
+    var prefix1 = "http://localhost:8000/archives/perma/"; // "{{ wb_prefix }}"
+    var prefix2 = "http://localhost:8000/archives/ia/";
+
+    {#  var content1 = new ContentFrame({"url":  "http://example.com/"+ window.location.hash,#}
+    {#                                   "prefix": prefix1,#}
+    {#                                 "request_ts": "20160108183900",#}
+    {#                                 "iframe": "#iframe_1"});#}
+    {##}
+    {#  var content2 = new ContentFrame({"url":  "http://example.com/" + window.location.hash,#}
+    {#                                 "prefix": prefix2,#}
+    {#                                 "request_ts": "20100701085318",#}
+    {#                                 "iframe": "#iframe_2"});#}
+
+
+
+  var cframe = new ContentFrame({"url": "{{ url }}" + window.location.hash,
+                                 "prefix": "{{ wb_prefix }}",
+                                 "request_ts": "{{ wb_url.timestamp }}",
+                                 "iframe": "#replay_iframe"});
+  var wb_prefix = "{{ wb_prefix }}"
+</script>
+
 </div>
 <style>
   .box {
@@ -30,27 +55,5 @@ html, body
       clear:both;
   }
 </style>
-
-  <div class="box"><iframe id="iframe_1" frameborder="0" seamless="seamless" scrolling="yes" class="wb_iframe" width="100%" height="512" align="left"></iframe></div>
-<div class="box"><iframe id="iframe_2" frameborder="0" seamless="seamless" scrolling="yes" class="wb_iframe" width="100%" height="512" align="right"></iframe></div>
-  <script>
-  var content1 = new ContentFrame({"url":  "http://example.com/"+ window.location.hash,
-                                   "prefix": "{{ wb_prefix }}",
-                                 "request_ts": "20160108183900",
-                                 "iframe": "#iframe_1"});
-
-  var content2 = new ContentFrame({"url":  "http://example.com/" + window.location.hash,
-                                 "prefix": "http://localhost:8000/ia/",
-                                 "request_ts": "20100701085318",
-                                 "iframe": "#iframe_2"});
-
-
-
-{#  var cframe = new ContentFrame({"url": "{{ url }}" + window.location.hash,#}
-{#                                 "prefix": "{{ wb_prefix }}",#}
-{#                                 "request_ts": "{{ wb_url.timestamp }}",#}
-{#                                 "iframe": "#replay_iframe"});#}
-  var wb_prefix = "{{ wb_prefix }}"
-</script>
 </body>
 </html>

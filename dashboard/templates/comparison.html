@@ -39,8 +39,8 @@
 
 {% block mainContent %}
 <div style="display: block;" class="capture-wrapper">
-  <iframe id="left_frame" src="{{ old_archive_capture.playback_url_with_access_token }}#_perma_diff_deleted_{{ old_archive.guid }}_{{ new_archive.guid }}" {% if capture.use_sandbox %}sandbox="allow-forms allow-scripts allow-top-navigation allow-same-origin" {% endif %}></iframe>
-  <iframe id="right_frame" src="{{ new_archive_capture.playback_url_with_access_token }}#_perma_diff_inserted_{{ old_archive.guid }}_{{ new_archive.guid }}" {% if capture.use_sandbox %}sandbox="allow-forms allow-scripts allow-top-navigation allow-same-origin" {% endif %}></iframe>
+  <iframe id="left_frame" src="http://localhost:8000/archives/perma/20160108183900/http://example.com" sandbox="allow-forms allow-scripts allow-top-navigation allow-same-origin" {% endif %}></iframe>
+  <iframe id="right_frame" src="http://localhost:8000/archives/ia/20100701085318/http://example.com/" sandbox="allow-forms allow-scripts allow-top-navigation allow-same-origin" {% endif %}></iframe>
 </div>
 {% endblock %}
 
