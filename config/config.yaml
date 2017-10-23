@@ -2,21 +2,33 @@
 # ========================================
 #
 enable_memento: true
+#enable_auto_colls: true
+
+recorder:
+  filename_template: my-warc-{timestamp}-{hostname}-{random}.warc.gz
+  source_coll: ia
+  rollover_idle_secs: 10
+#  rollover_size: 0
+
+autoindex: 5
 
 collections:
+  #  all: $all
   perma: memento+http://perma-archives.org/warc/
-  # rhizome (memento)
-  rhiz: memento+http://webenact.rhizome.org/all/
-
   ia: memento+https://web.archive.org/web/
+  mc:
+    resource: collections/mc
+    index: collections/mc/index
+
+#archive_paths: archive
+
+collections_root: collections
+
 # Settings for each collection
 use_js_obj_proxy: true
 
-# Memento support, enable
-enable_memento: true
-
 # Replay content in an iframe
-framed_replay: true
+framed_replay: false
 
 #static_url_path: dashboard/static
 static_path: dashboard/static
