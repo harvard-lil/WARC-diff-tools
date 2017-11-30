@@ -1,13 +1,15 @@
 <html>
     <head>
         <title>
-
         </title>
     </head>
     <body>
-    <div style="display: block;" class="capture-wrapper">
-      <iframe id="left_frame" src="http://localhost:8000/archives/perma/20160108183900mp_/http://example.com/"></iframe>
-      <iframe id="right_frame" src="http://localhost:8000/archives/perma/20170908194259/https://example.com/"></iframe>
-    </div>
+      <form action="/record/" method="post" class="col-centered">
+        {% csrf_token %}
+        <input type="url" id="submitted_url" name="submitted_url" value="http://example.com">
+        <input type="date" id="old_date" name="old_date" value="2000-01-10">
+        <input type="date" id="new_date" name="new_date" value="2003-01-10">
+        <input type="submit" value="SUBMIT">
+      </form>
     </body>
 </html>

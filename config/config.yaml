@@ -2,7 +2,7 @@
 # ========================================
 #
 enable_memento: true
-#enable_auto_colls: true
+enable_auto_colls: true
 
 recorder:
   filename_template: my-warc-{timestamp}-{hostname}-{random}.warc.gz
@@ -11,16 +11,14 @@ recorder:
 #  rollover_size: 0
 
 autoindex: 5
-
+#recorder: live
 collections:
   #  all: $all
   perma: memento+http://perma-archives.org/warc/
   ia: memento+https://web.archive.org/web/
-  mc:
-    resource: collections/mc
-    index: collections/mc/index
 
-#archive_paths: archive
+archive_paths: archive
+index_paths: indexes
 
 collections_root: collections
 
