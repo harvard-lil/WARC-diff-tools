@@ -12,5 +12,5 @@ from fabric.decorators import task
 
 @task(alias='run')
 def run_django():
-    local("python manage.py runserver 0.0.0.0:8000")
+    local("python manage.py runserver 0.0.0.0:8082")
 

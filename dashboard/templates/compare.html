@@ -1,13 +1,34 @@
 <html>
     <head>
+        <link rel="stylesheet" href="http://localhost:8000/static/css/styles.css">
         <title>
-
+          Archive comparison
         </title>
     </head>
     <body>
-    <div style="display: block;" class="capture-wrapper">
-      <iframe id="left_frame" src="{{ old_archive }}" sandbox="allow-forms allow-scripts allow-top-navigation allow-same-origin" ></iframe>
-      <iframe id="right_frame" src="{{ new_archive }}" sandbox="allow-forms allow-scripts allow-top-navigation allow-same-origin" ></iframe>
+    {% block header %}
+      {% include 'includes/header.html' %}
+    {% endblock %}
+
+    <div>
+      <form action="/compare" method="post">
+        {% csrf_token %}
+
+        <input type="hidden" name="old_archive_warc" value="{{ old_archive_warc }}">
+        <input type="hidden" name="new_archive_warc" value="{{ new_archive_warc }}">
+        <input type="hidden" name="old_archive_url" value="{{ old_archive_url }}">
+        <input type="hidden" name="new_archive_url" value="{{ new_archive_url }}">
+
+        <input type="submit" value="COMPARE">
+
+      </form>
+      {{ old_archive_warc }} {{ new_archive_warc }}
     </div>
+
+    <div style="display: block;" class="capture-wrapper">
+      <iframe class="archive-display" id="left_frame" src="{{ old_archive_url }}#_diff_deleted_{{ compare_id }}" sandbox="allow-forms allow-scripts allow-top-navigation allow-same-origin" ></iframe>
+      <iframe class="archive-display" id="right_frame" src="{{ new_archive_url }}#_diff_inserted_{{ compare_id }}" sandbox="allow-forms allow-scripts allow-top-navigation allow-same-origin" ></iframe>
+    </div>
+
     </body>
 </html>

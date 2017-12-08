@@ -5,7 +5,7 @@ enable_memento: true
 enable_auto_colls: true
 
 recorder:
-  filename_template: my-warc-{timestamp}-{hostname}-{random}.warc.gz
+  filename_template: warc-diff-{timestamp}-{random}.warc.gz
   source_coll: ia
   rollover_idle_secs: 10
 #  rollover_size: 0

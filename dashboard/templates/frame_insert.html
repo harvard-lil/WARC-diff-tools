@@ -12,38 +12,33 @@ html, body
 }
 
 </style>
-<script src='{{ host_prefix }}/{{ static_path }}/wb_frame.js'> </script>
 
+<script src='{{ host_prefix }}/{{ static_path }}/wb_frame.js'> </script>
 {{ banner_html }}
+{{ head_insert }}
+
+
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+
+
 
 </head>
 <body style="margin: 0px; padding: 0px;">
 <div id="wb_iframe_div">
 
   <iframe id="replay_iframe" frameborder="0" seamless="seamless" scrolling="yes" class="wb_iframe"></iframe>
-{#  <div class="box"><iframe id="iframe_2" frameborder="0" seamless="seamless" scrolling="yes" class="wb_iframe" width="100%" height="512" align="right"></iframe></div>#}
   <script>
-    var prefix1 = "http://localhost:8000/archives/perma/"; // "{{ wb_prefix }}"
-    var prefix2 = "http://localhost:8000/archives/ia/";
-
-    {#  var content1 = new ContentFrame({"url":  "http://example.com/"+ window.location.hash,#}
-    {#                                   "prefix": prefix1,#}
-    {#                                 "request_ts": "20160108183900",#}
-    {#                                 "iframe": "#iframe_1"});#}
-    {##}
-    {#  var content2 = new ContentFrame({"url":  "http://example.com/" + window.location.hash,#}
-    {#                                 "prefix": prefix2,#}
-    {#                                 "request_ts": "20100701085318",#}
-    {#                                 "iframe": "#iframe_2"});#}
-
-
-
-  var cframe = new ContentFrame({"url": "{{ url }}" + window.location.hash,
+    {#var prefix1 = "http://localhost:8000/perma/"; // "{{ wb_prefix }}"#}
+    {#var prefix2 = "http://localhost:8000/ia/";#}
+    console.log("HO HO HO I'm in frame_insert!!!!!")
+    var cframe = new ContentFrame({"url": "{{ url }}" + window.location.hash,
                                  "prefix": "{{ wb_prefix }}",
                                  "request_ts": "{{ wb_url.timestamp }}",
                                  "iframe": "#replay_iframe"});
-  var wb_prefix = "{{ wb_prefix }}"
-</script>
+
+
+  </script>
 
 </div>
 <style>

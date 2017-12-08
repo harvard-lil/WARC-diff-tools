@@ -64,16 +64,7 @@
                 {% endif %}
               </span>
             {% endif %}
-            {% if request.user.is_authenticated %}
-            {% else %}
-              <a class="about" href="{% url 'about' %}" target="_blank">What is Perma.cc?</a>
-            {% endif %}
           </p>
-        </div>
-      </div>
-      <div class="col col-sm-2 _user {% if request.user.is_authenticated %}_authenticated{% else %}_unauthenticated{% endif %}">
-        <div class="content">
-            <a class="about" href="{% url 'about' %}" target="_blank">What is Perma.cc?</a>
         </div>
       </div>
     </div>

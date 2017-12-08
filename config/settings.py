@@ -2,7 +2,7 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BASE_URL = 'http://localhost:8000'
+BASE_URL = 'http://localhost:8082'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'compare',
     'dashboard',
 ]
 
@@ -105,8 +106,28 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
+# PROJECT_ROOT is the absolute path to the perma_web folder
+# We determine this robustly thanks to http://stackoverflow.com/a/2632297
+import sys
+PROJECT_ROOT = os.path.dirname(os.path.realpath(''))
 
 STATIC_URL = '/static/'
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'static-collected')                # where to store collected static files
+STATIC_DIR = os.path.join(BASE_DIR, 'static')
 COLLECTIONS_DIR = os.path.join(BASE_DIR, 'collections')
+WARC_ARCHIVE_DIR = '/archive'
 ARCHIVES_ROUTE = '/archives'
+
+
+# where to look for static files (in addition to app/static/)
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+    '/var/www/static/',
+]
+
+
+STATICFILES_FINDERS = (         # how to look for static files
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+)

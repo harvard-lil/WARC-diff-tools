@@ -1,11 +1,11 @@
-import os
 import requests
 
-from django.shortcuts import render, render_to_response
-from django.conf import settings
+from django.shortcuts import render, redirect
 
-from dashboard.utils import format_date_for_memento, url_to_dirname
+from dashboard.utils import *
 
+from compare.warc_compare import *
+from compare.models import Compare, WDTArchive
 
 def index(request):
     return render(request, "index.html")
@@ -16,29 +16,139 @@ def record(request):
     Take requested timestamp and url and create a new archive in a unique directory
     unless one already exists
     """
-    request_data = request.POST.dict()
-    submitted_url = request_data['submitted_url']
-    old_timestamp = format_date_for_memento(request_data['old_date'])
-    new_timestamp = format_date_for_memento(request_data['new_date'])
+    submitted_url = request.POST.get('submitted_url')
+    old_timestamp = format_date_for_memento(request.POST.get('old_date'))
+    new_timestamp = format_date_for_memento(request.POST.get('new_date'))
 
-    archive_paths = []
-
+    archives = []
     url_dirname = url_to_dirname(submitted_url)
 
+    # create new comparison object
     for timestamp in (old_timestamp, new_timestamp):
-        collection_name = timestamp + '_' + url_dirname
-        collection_path = settings.COLLECTIONS_DIR + '/' + collection_name
-        archive_paths.append(settings.ARCHIVES_ROUTE + '/' + collection_name + '/' + timestamp + '/' + submitted_url)
+        wdtarchive = WDTArchive.objects.create(
+            timestamp=timestamp,
+            submitted_url=submitted_url,
+            warc_dir=timestamp + '_' + url_dirname,
+        )
+
+        wdtarchive.save()
+
+        collection_path = settings.COLLECTIONS_DIR + '/' + wdtarchive.warc_dir
 
         if not os.path.exists(collection_path):
             os.mkdir(collection_path)
-            archiving_request = settings.BASE_URL + settings.ARCHIVES_ROUTE + '/' + collection_name + '/record/' + timestamp + '/' + submitted_url
+            archiving_request = settings.BASE_URL + settings.ARCHIVES_ROUTE + '/' + wdtarchive.warc_dir + '/record/' + wdtarchive.timestamp + '/' + wdtarchive.submitted_url
             requests.get(archiving_request)
 
+        archives.append(wdtarchive)
+
+    compare_obj = Compare.objects.create(warc1=archives[0], warc2=archives[1])
+    compare_obj.save()
+    print("old_archive_url", archives[0].get_full_local_url())
+
     data = {
-        'old_archive': archive_paths[0],
-        'new_archive': archive_paths[1]
+        'old_archive_url': archives[0].get_full_local_url(),
+        'new_archive_url': archives[1].get_full_local_url(),
+        'old_archive_warc': archives[0].get_full_warc_path(),
+        'new_archive_warc': archives[1].get_full_warc_path(),
     }
 
-    return render_to_response("compare.html", data)
+    return redirect('%s/compare/%s' % (settings.BASE_URL, compare_obj.id))
+
+
+
+def single_link(request):
+    from werkzeug.test import Client
+    from werkzeug.wrappers import BaseResponse
+    from pywb.apps.frontendapp import FrontEndApp
+    # full_url = "http://localhost:8082/archives/20000110_example_com/20000110/http://example.com"
+
+    full_url = "/20000110_example_com/20000110/http://example.com"
+    application = FrontEndApp(
+                config_file='config/config.yaml',
+                custom_config={
+                    'debug': True,
+                    # 'port': '8080',
+                    'framed_replay': True})
+
+    # # Set up a werkzeug wsgi client.
+    client = Client(application, BaseResponse)
+    resp = client.get(full_url, follow_redirects=True)
+    # import ipdb; ipdb.set_trace()
+    return render(resp.response, "single_link.html")
+
+
+def compare(request, compare_obj_id):
+    """
+        Given a URL contained in this WARC, return a werkzeug BaseResponse for the URL as played back by pywb.
+    """
+    compare_obj = Compare.objects.get(id=compare_obj_id)
+    archive1 = compare_obj.warc1
+    archive2 = compare_obj.warc2
+
+    # replay archive to get HTML data
+    html1 = archive1.replay_url().data.decode()
+    html2 = archive2.replay_url().data.decode()
+    # import ipdb; ipdb.set_trace()
+
+    # ignore guids in html
+    # diff_settings.EXCLUDE_STRINGS_A.append(str(old_guid))
+    # diff_settings.EXCLUDE_STRINGS_A.append(str(old_guid))
+    # diff_settings.EXCLUDE_STRINGS_B.append(str(new_guid))
+
+    # add own style string
+    # diff_settings.STYLE_STR = settings.DIFF_STYLE_STR
+
+    wc = WARCCompare(archive1.get_full_warc_path(), archive2.get_full_warc_path())
+    # import ipdb; ipdb.set_trace()
+    if not os.path.exists(get_compare_dir_path(compare_obj_id)):
+        diffed = diff.HTMLDiffer(html1, html2)
+        write_to_static(diffed.deleted_diff, 'deleted.html', compare_id=compare_obj_id)
+        write_to_static(diffed.inserted_diff, 'inserted.html', compare_id=compare_obj_id)
+        write_to_static(diffed.combined_diff, 'combined.html', compare_id=compare_obj_id)
+
+    # # TODO: change all '/' in url to '_' to save
+    total_count, unchanged_count, missing_count, added_count, modified_count = wc.count_resources()
+    resources = []
+    old_archive = archive1
+    new_archive = archive2
+    for status in wc.resources:
+        for content_type in wc.resources[status]:
+            if "javascript" in content_type:
+                content_type_str = "script"
+            elif "image" in content_type:
+                content_type_str = "img"
+            elif "html" in content_type:
+                content_type_str = "html"
+            else:
+                content_type_str = content_type
+            for url in wc.resources[status][content_type]:
+                resource = {
+                    'url': url,
+                    'content_type': content_type_str,
+                    'status': status,
+                }
+                if url == old_archive.submitted_url:
+                    resources = [resource] + resources
+                else:
+                    resources.append(resource)
+
+    context = {
+        'compare_id': compare_obj_id,
+        'old_archive_url': old_archive.get_full_local_url(),
+        'new_archive_url': new_archive.get_full_local_url(),
+        'this_page': 'comparison',
+        # 'link_url': settings.HOST + '/' + old_archive.guid,
+        # 'protocol': protocol,
+        'resources': resources,
+        'resource_count': {
+            'total': total_count[1],
+            'unchanged': unchanged_count,
+            'missing': missing_count,
+            'added': added_count,
+            'modified': modified_count,
+        },
+    }
+
+    return render(request, 'compare.html', context)
 

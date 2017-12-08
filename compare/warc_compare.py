@@ -1,8 +1,10 @@
 from htmldiffer import diff
 
 from toggles import shingle_settings
-import utils
+from compare import utils
 
+warc1_path = "/Users/aaizman/Documents/WARC-diff-tools/collections/20030110_example_com/archive/warc-diff-20171130212034161210-RSJ3M2I2.warc.gz"
+warc2_path = "/Users/aaizman/Documents/WARC-diff-tools/collections/20000110_example_com/archive/warc-diff-20171130210938217967-HKIUU7FF.warc.gz"
 
 class WARCCompare:
     def __init__(self, warc1_path, warc2_path):
@@ -34,9 +36,7 @@ class WARCCompare:
         payload1 = utils.get_payload(urlpath, self.warc1)
         payload2 = utils.get_payload(urlpath2, self.warc2)
 
-        decompressed_payload1 = utils.decompress_payload(payload1)
-        decompressed_payload2 = utils.decompress_payload(payload2)
-        d = diff.HTMLDiffer(decompressed_payload1, decompressed_payload2)
+        d = diff.HTMLDiffer(payload1, payload2)
 
         return d.deleted_diff, d.inserted_diff, d.combined_diff
 
@@ -79,15 +79,12 @@ class WARCCompare:
         p1 = utils.get_payload(urls[0], self.warc1)
         p2 = utils.get_payload(urls[1], self.warc2)
 
-        dp1 = utils.decompress_payload(p1)
-        dp2 = utils.decompress_payload(p2)
-
-        cleaned_dp1 = utils.process_text(dp1)
-        cleaned_dp2 = utils.process_text(dp2)
+        cleaned_p1 = utils.process_text(p1)
+        cleaned_p2 = utils.process_text(p2)
 
         # shingle cleaned text
-        shingles1 = utils.shingle(cleaned_dp1, shingle_settings=shingle_settings)
-        shingles2 = utils.shingle(cleaned_dp2, shingle_settings=shingle_settings)
+        shingles1 = utils.shingle(cleaned_p1, shingle_settings=shingle_settings)
+        shingles2 = utils.shingle(cleaned_p2, shingle_settings=shingle_settings)
 
         if minhash:
             compared['minhash'] = utils.get_minhash(shingles1, shingles2)
