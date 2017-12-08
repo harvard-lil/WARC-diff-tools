@@ -122,12 +122,12 @@ ARCHIVES_ROUTE = '/archives'
 # where to look for static files (in addition to app/static/)
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
+    os.path.join(BASE_DIR, "dashboard/static"),
     '/var/www/static/',
 ]
 
 
-STATICFILES_FINDERS = (         # how to look for static files
+STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
-)
+]
