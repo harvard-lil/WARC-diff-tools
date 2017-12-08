@@ -40,9 +40,9 @@ def get_full_warc_path(archive_dirname):
 
 # protocol = "https://" if settings.SECURE_SSL_REDIRECT else "http://"
 
-def rewrite_html(html_page, guid):
-    tmp_html = re.sub("/{0}".format(guid), "/warc/{0}".format(guid), html_page)
-    return re.sub("http://localhost/warc", "{0}{1}{2}".format(protocol, settings.WARC_HOST, settings.WARC_ROUTE), tmp_html)
+def rewrite_html(html_page):
+    # TODO: build this out
+    return re.sub("http://localhost/", "http://localhost:8082/archives/", html_page)
 
 
 def write_to_static(new_string, filename, compare_id=None):

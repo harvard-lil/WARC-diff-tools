@@ -8,6 +8,7 @@ from dashboard.utils import *
 from compare.warc_compare import *
 from compare.models import Compare, WDTArchive
 
+
 def index(request):
     return render(request, "index.html")
 
@@ -20,7 +21,6 @@ def create(request):
     submitted_url = request.POST.get('submitted_url')
     old_timestamp = format_date_for_memento(request.POST.get('old_date'))
     new_timestamp = format_date_for_memento(request.POST.get('new_date'))
-    # http://localhost:8082/archives/20130110_twitter_com/record/20130110/http://twitter.com
     archives = []
     url_dirname = url_to_dirname(submitted_url)
 
@@ -33,10 +33,7 @@ def create(request):
             warc_dir=timestamp + '_' + url_dirname)
 
         wdtarchive.save()
-        # TODO: assuming faultless recording here for now, should fix
-
         wdtarchive.create_collections_dir()
-        import ipdb; ipdb.set_trace()
 
         # if warc does not exist yet, get record url to record new warc
         # if it does, get warc url
@@ -48,14 +45,13 @@ def create(request):
     compare_obj.save()
 
     data = {
+        "compare_id": compare_obj.id,
         'request1': archive_requested_urls[0],
         'request2': archive_requested_urls[1],
-        'old_archive_url': archives[0].get_full_local_url(),
-        'new_archive_url': archives[1].get_full_local_url(),
     }
-    # return redirect('%s/compare/%s' % (settings.BASE_URL, compare_obj.id))
-    # return redirect('/compare/%s' % compare_obj.id, context=data)
+
     return render(request, 'compare.html', data)
+
 
 def single_link(request):
     from werkzeug.test import Client
@@ -78,34 +74,35 @@ def single_link(request):
     return render(resp.response, "single_link.html")
 
 
-def compare(request, compare_obj_id):
+def compare(request, compare_id):
     """
         Given a URL contained in this WARC, return a werkzeug BaseResponse for the URL as played back by pywb.
     """
-    compare_obj = Compare.objects.get(id=compare_obj_id)
+    compare_obj = Compare.objects.get(id=compare_id)
     archive1 = compare_obj.warc1
     archive2 = compare_obj.warc2
 
     # replay archive to get HTML data
-    html1 = archive1.replay_url().data.decode()
-    html2 = archive2.replay_url().data.decode()
-    # import ipdb; ipdb.set_trace()
-
-    # ignore guids in html
-    # diff_settings.EXCLUDE_STRINGS_A.append(str(old_guid))
-    # diff_settings.EXCLUDE_STRINGS_A.append(str(old_guid))
-    # diff_settings.EXCLUDE_STRINGS_B.append(str(new_guid))
-
-    # add own style string
-    # diff_settings.STYLE_STR = settings.DIFF_STYLE_STR
-
     wc = WARCCompare(archive1.get_full_warc_path(), archive2.get_full_warc_path())
     # import ipdb; ipdb.set_trace()
-    if not os.path.exists(get_compare_dir_path(compare_obj_id)):
+    if not os.path.exists(get_compare_dir_path(compare_id)):
+        html1 = archive1.replay_url().data.decode()
+        html2 = archive2.replay_url().data.decode()
+        # import ipdb; ipdb.set_trace()
+        html1 = rewrite_html(html1)
+        html2 = rewrite_html(html2)
+        # ignore guids in html
+        # diff_settings.EXCLUDE_STRINGS_A.append(str(old_guid))
+        # diff_settings.EXCLUDE_STRINGS_A.append(str(old_guid))
+        # diff_settings.EXCLUDE_STRINGS_B.append(str(new_guid))
+
+        # add own style string
+        # diff_settings.STYLE_STR = settings.DIFF_STYLE_STR
+
         diffed = diff.HTMLDiffer(html1, html2)
-        write_to_static(diffed.deleted_diff, 'deleted.html', compare_id=compare_obj_id)
-        write_to_static(diffed.inserted_diff, 'inserted.html', compare_id=compare_obj_id)
-        write_to_static(diffed.combined_diff, 'combined.html', compare_id=compare_obj_id)
+        write_to_static(diffed.deleted_diff, 'deleted.html', compare_id=compare_id)
+        write_to_static(diffed.inserted_diff, 'inserted.html', compare_id=compare_id)
+        write_to_static(diffed.combined_diff, 'combined.html', compare_id=compare_id)
 
     # # TODO: change all '/' in url to '_' to save
     total_count, unchanged_count, missing_count, added_count, modified_count = wc.count_resources()
@@ -134,9 +131,9 @@ def compare(request, compare_obj_id):
                     resources.append(resource)
 
     context = {
-        'compare_id': compare_obj_id,
-        'old_archive_url': old_archive.get_full_local_url(),
-        'new_archive_url': new_archive.get_full_local_url(),
+        'compare_id': compare_id,
+        'request1': archive1.get_record_or_local_url(),
+        'request2': archive2.get_record_or_local_url(),
         'this_page': 'comparison',
         # 'link_url': settings.HOST + '/' + old_archive.guid,
         # 'protocol': protocol,

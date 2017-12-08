@@ -14,11 +14,7 @@
     <div>
       <form action="/compare" method="post">
         {% csrf_token %}
-
-        <input type="hidden" name="old_archive_warc" value="{{ old_archive_warc }}">
-        <input type="hidden" name="new_archive_warc" value="{{ new_archive_warc }}">
-        <input type="hidden" name="old_archive_url" value="{{ old_archive_url }}">
-        <input type="hidden" name="new_archive_url" value="{{ new_archive_url }}">
+        <input type="hidden" name="compare_id" value="{{ compare_id }}"
 
         <input type="submit" value="COMPARE">
 
@@ -27,12 +23,8 @@
     </div>
 
     <div style="display: block;" class="capture-wrapper">
-      <!--<iframe class="archive-display" id="left_frame" src="{{ old_archive_url }}#_diff_deleted_{{ compare_id }}" sandbox="allow-forms allow-scripts allow-top-navigation allow-same-origin" ></iframe>
-      <iframe class="archive-display" id="right_frame" src="{{ new_archive_url }}#_diff_inserted_{{ compare_id }}" sandbox="allow-forms allow-scripts allow-top-navigation allow-same-origin" ></iframe>
-      <iframe class="archive-display" id="left_frame" src="{{ old_archive_url }}" ></iframe>
-      <iframe class="archive-display" id="right_frame" src="{{ new_archive_url }}" ></iframe>-->
-      <iframe class="archive-display" id="left_frame" src="{{ request1 }}" ></iframe>
-      <iframe class="archive-display" id="right_frame" src="{{ request2 }}" ></iframe>
+      <iframe class="archive-display" id="left_frame" src="{{ request1 }}#_diff_deleted_59" ></iframe>
+      <iframe class="archive-display" id="right_frame" src="{{ request2 }}#_diff_inserted_59" ></iframe>
     </div>
 
     </body>
