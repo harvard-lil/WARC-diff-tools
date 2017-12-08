@@ -27,9 +27,29 @@
     </div>
 
     <div style="display: block;" class="capture-wrapper">
-      <iframe class="archive-display" id="left_frame" src="{{ old_archive_url }}#_diff_deleted_{{ compare_id }}" sandbox="allow-forms allow-scripts allow-top-navigation allow-same-origin" ></iframe>
+      <!--<iframe class="archive-display" id="left_frame" src="{{ old_archive_url }}#_diff_deleted_{{ compare_id }}" sandbox="allow-forms allow-scripts allow-top-navigation allow-same-origin" ></iframe>
       <iframe class="archive-display" id="right_frame" src="{{ new_archive_url }}#_diff_inserted_{{ compare_id }}" sandbox="allow-forms allow-scripts allow-top-navigation allow-same-origin" ></iframe>
+      <iframe class="archive-display" id="left_frame" src="{{ old_archive_url }}" ></iframe>
+      <iframe class="archive-display" id="right_frame" src="{{ new_archive_url }}" ></iframe>-->
+      <iframe class="archive-display" id="left_frame" src="{{ request1 }}" ></iframe>
+      <iframe class="archive-display" id="right_frame" src="{{ request2 }}" ></iframe>
     </div>
 
     </body>
 </html>
+
+{% block scripts %}
+
+  <script>
+    var archive = { guid: "{{ old_archive.guid }}" };
+    var current_user = {id:"{{ request.user.id }}"};
+    var resource_count = {
+        total: parseInt("{{resource_count.total}}"),
+        unchanged: parseInt("{{resource_count.unchanged}}"),
+        missing: parseInt("{{resource_count.missing}}"),
+        added: parseInt("{{resource_count.added}}"),
+        modified: parseInt("{{resource_count.modified}}")
+    };
+  </script>
+
+{% endblock %}

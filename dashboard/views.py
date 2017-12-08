@@ -1,6 +1,7 @@
 import requests
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
+from django.http import HttpResponseRedirect
 
 from dashboard.utils import *
 
@@ -11,7 +12,7 @@ def index(request):
     return render(request, "index.html")
 
 
-def record(request):
+def create(request):
     """
     Take requested timestamp and url and create a new archive in a unique directory
     unless one already exists
@@ -19,43 +20,42 @@ def record(request):
     submitted_url = request.POST.get('submitted_url')
     old_timestamp = format_date_for_memento(request.POST.get('old_date'))
     new_timestamp = format_date_for_memento(request.POST.get('new_date'))
-
+    # http://localhost:8082/archives/20130110_twitter_com/record/20130110/http://twitter.com
     archives = []
     url_dirname = url_to_dirname(submitted_url)
 
     # create new comparison object
+    archive_requested_urls = []
     for timestamp in (old_timestamp, new_timestamp):
         wdtarchive = WDTArchive.objects.create(
             timestamp=timestamp,
             submitted_url=submitted_url,
-            warc_dir=timestamp + '_' + url_dirname,
-        )
+            warc_dir=timestamp + '_' + url_dirname)
 
         wdtarchive.save()
+        # TODO: assuming faultless recording here for now, should fix
 
-        collection_path = settings.COLLECTIONS_DIR + '/' + wdtarchive.warc_dir
+        wdtarchive.create_collections_dir()
+        import ipdb; ipdb.set_trace()
 
-        if not os.path.exists(collection_path):
-            os.mkdir(collection_path)
-            archiving_request = settings.BASE_URL + settings.ARCHIVES_ROUTE + '/' + wdtarchive.warc_dir + '/record/' + wdtarchive.timestamp + '/' + wdtarchive.submitted_url
-            requests.get(archiving_request)
+        # if warc does not exist yet, get record url to record new warc
+        # if it does, get warc url
+        archive_requested_urls.append(wdtarchive.get_record_or_local_url())
 
         archives.append(wdtarchive)
 
     compare_obj = Compare.objects.create(warc1=archives[0], warc2=archives[1])
     compare_obj.save()
-    print("old_archive_url", archives[0].get_full_local_url())
 
     data = {
+        'request1': archive_requested_urls[0],
+        'request2': archive_requested_urls[1],
         'old_archive_url': archives[0].get_full_local_url(),
         'new_archive_url': archives[1].get_full_local_url(),
-        'old_archive_warc': archives[0].get_full_warc_path(),
-        'new_archive_warc': archives[1].get_full_warc_path(),
     }
-
-    return redirect('%s/compare/%s' % (settings.BASE_URL, compare_obj.id))
-
-
+    # return redirect('%s/compare/%s' % (settings.BASE_URL, compare_obj.id))
+    # return redirect('/compare/%s' % compare_obj.id, context=data)
+    return render(request, 'compare.html', data)
 
 def single_link(request):
     from werkzeug.test import Client
