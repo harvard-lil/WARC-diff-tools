@@ -1,11 +1,12 @@
 import os
-from django.db import models
-from django.conf import settings
+from datetime import datetime
 from werkzeug.test import Client
 from werkzeug.wrappers import BaseResponse
 from pywb.apps.frontendapp import FrontEndApp
 
-# from dashboard.utils import
+from django.db import models
+from django.conf import settings
+
 
 class Compare(models.Model):
     id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
@@ -75,3 +76,7 @@ class WDTArchive(models.Model):
             return self.get_full_local_url()
         else:
             return self.get_recording_url()
+
+    def get_friendly_timestamp(self):
+        d = datetime.strptime(self.timestamp, "%Y%m%d")
+        return str(d.date())

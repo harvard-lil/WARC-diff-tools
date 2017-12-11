@@ -1,55 +1,18 @@
-
-  <header{% if original_archive.is_private %} class="_isPrivate"{% endif %}>
-    {% if request.user.is_authenticated %}
-    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-      <span class="icon-bar"></span>
-      <span class="icon-bar"></span>
-      <span class="icon-bar"></span>
-    </button>
-  {% endif %}
-
-    <div class="primary-segment row">
-      <div class="col col-sm-2 _details">
+<header class="header-dark container-fluid">
+  <div class="row">
+        <!--<button class="btn" id="show-highlights-btn">
+          Show highlights
+        </button>-->
+    <div class="col col-sm-8 col-primary">
+      <form action="/compare/{{ compare_id }}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="compare_id" value="{{ compare_id }}">
+        <input class="btn dark-btn" type="submit" value="compare">
+      </form>
+    </div>
+    <!--<div class="col col-sm-4 _main col-primary">
         <div class="content">
-          {% if new_archive %}
-            File changes:
-            <br/>
-            <button id="resource-count-added"
-                    class="btn btn-ui-small btn-circle btn-resource-details color-added"
-                    type="button">
-              +{{ resource_count.added }}
-            </button>
-            <button id="resource-count-missing"
-                    class="btn btn-ui-small btn-circle btn-resource-details color-missing"
-                    type="button">
-              -{{ resource_count.missing }}
-            </button>
-            <button id="resource-count-modified"
-                    class="btn btn-ui-small btn-circle btn-resource-details color-modified"
-                    type="button">
-              *{{ resource_count.modified }}
-            </button>
-            <button id="resource-count-total"
-                    class="btn btn-ui-small btn-circle btn-resource-details color-total"
-                    type="button">
-              {{ resource_count.total }}
-            </button>
-          {% else %}
-            <button id="details-button"
-                    class="btn btn-ui-small details"
-                    type="button">
-              <span>Show more details</span>
-            </button>
-          {% endif %}
-        </div>
-      </div>
-      <div class="col col-sm-4 _main {% if request.user.is_authenticated %}_authenticated{% else %}_unauthenticated{% endif %}">
-        <div class="content">
-          <p class="title">Comparing Perma.cc records</p>
           <p class="creation">
-            {% if new_archive %}
-              {{ original_archive.creation_timestamp }}
-            {% endif %}
             {% if serve_type != 'image' and new_archive %}
               <span class="action">
                 <span class="_verbose">
@@ -66,75 +29,19 @@
             {% endif %}
           </p>
         </div>
-      </div>
+      </div>-->
+    <div class="col col-sm-2 col-primary">
+      <a target="_blank" href="{{ submitted_url }}">View live</a>
     </div>
-    <div class="secondary-segment row">
-      <div class="col-sm-6 content">
-        <a href="{{ protocol }}{{ request.get_host }}/{{ old_archive.guid }}">
-          {{ protocol }}{{ request.get_host }}/{{ old_archive.guid }}
-        </a>
-        <span class="action">
-          <span class="_verbose">
-            {{ old_archive.creation_timestamp }}
-          </span>
-        </span>
-      </div>
-      <div class="col-sm-6">
-        {% if new_archive %}
-          <a href="{{ protocol }}{{ request.get_host }}/{{ old_archive.guid }}">
-            {{ protocol }}{{ request.get_host }}/{{ old_archive.guid }}
-          </a>
-          <span class="action">
-            <span class="_verbose">
-              {{ new_archive.creation_timestamp }}
-            </span>
-          </span>
-
-        {% endif %}
-      </div>
+    <div class="col col-sm-2 col-primary">
+      <a target="" href="/about">About</a>
     </div>
-    <div id="collapse-details" class="details-segment ui-tray row collapse">
-      <div class="tray-details tray-inverse">
-        <div class="tray-detail-group">
-          <label class="tray-detail-title" for="source_url">Original page URL</label>
-          <input id="source_url"
-                 class="tray-detail-entry"
-                 value="{{ old_archive.submitted_url }}"
-                 readonly>
-        </div>
-        {% if new_archive %}
-        <table class="table comparison-table table-striped">
-          <thead>
-            <tr>
-              <th>type</th>
-              <th>File URL</th>
-              <th>% change</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for resource in resources %}
-            <tr class="resource-{{ resource.status }} resource-row">
-              <!--<th scope="row">1</th>-->
-              <td class="resource-content-type">
-                {{ resource.content_type }}
-              </td>
-              <td>
-                <a href="?q={{resource.url}}">
-                  {{ resource.url}}
-                </a>
-              </td>
-              {% if resource.change %}
-                <td>{{ resource.change}}</td>
-              {% else %}
-                <td class="resource-{{ resource.status}}">{{ resource.status}}</td>
-              {% endif %}
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
 
-        {% endif %}
 
-      </div>
-    </div>
-  </header>
+
+  </div>
+  <div class="row light-row">
+    <div class="col center-text col-sm-6 col-secondary">captured {{ timestamp1 }}</div>
+    <div class="col center-text col-sm-6 col-secondary">captured {{ timestamp2 }}</div>
+  </div>
+</header>

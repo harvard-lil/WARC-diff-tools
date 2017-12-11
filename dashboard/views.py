@@ -44,13 +44,23 @@ def create(request):
     compare_obj = Compare.objects.create(warc1=archives[0], warc2=archives[1])
     compare_obj.save()
 
-    data = {
-        "compare_id": compare_obj.id,
-        'request1': archive_requested_urls[0],
-        'request2': archive_requested_urls[1],
-    }
+    # return render(request, 'compare.html', data)
 
-    return render(request, 'compare.html', data)
+    return redirect('/view/%s' % compare_obj.id)
+
+
+def view_pair(request, compare_id):
+    compare_obj = Compare.objects.get(id=compare_id)
+    context = {
+        "this_page": "view_pair",
+        "compare_id": compare_id,
+        "request1": compare_obj.warc1.get_record_or_local_url(),
+        "request2": compare_obj.warc2.get_record_or_local_url(),
+        "timestamp1": compare_obj.warc1.get_friendly_timestamp(),
+        "timestamp2": compare_obj.warc2.get_friendly_timestamp(),
+        "submitted_url": compare_obj.warc1.submitted_url
+    }
+    return render(request, 'compare.html', context)
 
 
 def single_link(request):
@@ -84,13 +94,12 @@ def compare(request, compare_id):
 
     # replay archive to get HTML data
     wc = WARCCompare(archive1.get_full_warc_path(), archive2.get_full_warc_path())
-    # import ipdb; ipdb.set_trace()
     if not os.path.exists(get_compare_dir_path(compare_id)):
         html1 = archive1.replay_url().data.decode()
         html2 = archive2.replay_url().data.decode()
-        # import ipdb; ipdb.set_trace()
-        html1 = rewrite_html(html1)
-        html2 = rewrite_html(html2)
+
+        html1 = rewrite_html(html1, archive1.warc_dir)
+        html2 = rewrite_html(html2, archive2.warc_dir)
         # ignore guids in html
         # diff_settings.EXCLUDE_STRINGS_A.append(str(old_guid))
         # diff_settings.EXCLUDE_STRINGS_A.append(str(old_guid))
@@ -107,8 +116,6 @@ def compare(request, compare_id):
     # # TODO: change all '/' in url to '_' to save
     total_count, unchanged_count, missing_count, added_count, modified_count = wc.count_resources()
     resources = []
-    old_archive = archive1
-    new_archive = archive2
     for status in wc.resources:
         for content_type in wc.resources[status]:
             if "javascript" in content_type:
@@ -125,7 +132,7 @@ def compare(request, compare_id):
                     'content_type': content_type_str,
                     'status': status,
                 }
-                if url == old_archive.submitted_url:
+                if url == archive1.submitted_url:
                     resources = [resource] + resources
                 else:
                     resources.append(resource)
@@ -134,9 +141,13 @@ def compare(request, compare_id):
         'compare_id': compare_id,
         'request1': archive1.get_record_or_local_url(),
         'request2': archive2.get_record_or_local_url(),
-        'this_page': 'comparison',
-        # 'link_url': settings.HOST + '/' + old_archive.guid,
+        'this_page': 'compare',
+        "timestamp1": compare_obj.warc1.get_friendly_timestamp(),
+        "timestamp2": compare_obj.warc2.get_friendly_timestamp(),
+
+        # 'link_url': settings.HOST + '/' + archive1.guid,
         # 'protocol': protocol,
+        "submitted_url": compare_obj.warc1.submitted_url,
         'resources': resources,
         'resource_count': {
             'total': total_count[1],

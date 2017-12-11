@@ -40,9 +40,13 @@ def get_full_warc_path(archive_dirname):
 
 # protocol = "https://" if settings.SECURE_SSL_REDIRECT else "http://"
 
-def rewrite_html(html_page):
+def rewrite_html(html_page, warc_dir):
     # TODO: build this out
-    return re.sub("http://localhost/", "http://localhost:8082/archives/", html_page)
+    tmp_html = re.sub('href="/%s' % warc_dir, 'href="http://localhost:8082/archives/%s' % warc_dir, html_page)
+    tmp_html = re.sub("localhost:8082/%s" % warc_dir, "localhost:8082/archives/%s" % warc_dir, tmp_html)
+    tmp_html = re.sub("localhost/", "localhost:8082/", tmp_html)
+    tmp_html = re.sub('href="//localhost', 'href="http://localhost', tmp_html)
+    return re.sub("http://localhost:8082", "http://localhost:8082/archives/", tmp_html)
 
 
 def write_to_static(new_string, filename, compare_id=None):
@@ -59,6 +63,7 @@ def create_compare_dir(compare_id):
     if not os.path.exists(dirpath):
         os.makedirs(dirpath)
     return dirpath
+
 
 def get_compare_dir_path(compare_id):
     return os.path.join(settings.STATIC_DIR, compare_id)

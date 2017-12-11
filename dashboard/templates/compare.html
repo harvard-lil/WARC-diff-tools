@@ -1,40 +1,42 @@
 <html>
     <head>
       {% load static %}
+      <link rel="stylesheet" href="{% static 'css/normalize.css' %}">
+      <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+      <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+      <link rel="stylesheet" href="{% static 'css/general.css' %}">
       <link rel="stylesheet" href="{% static 'css/dashboard-styles.css' %}">
-        <title>
-          Archive comparison
-        </title>
+      <title>
+        Archive comparison
+      </title>
     </head>
     <body>
-    {% block header %}
-      {% include 'includes/header.html' %}
-    {% endblock %}
+      {% block header %}
+        {% if this_page == 'view_pair' %}
+          {% include 'includes/header.html' %}
+        {% else %}
+          {% include 'includes/compare_header.html' %}
+        {% endif %}
+      {% endblock %}
 
-    <div>
-      <form action="/compare" method="post">
-        {% csrf_token %}
-        <input type="hidden" name="compare_id" value="{{ compare_id }}"
+    {% if this_page == 'view_pair' %}
 
-        <input type="submit" value="COMPARE">
-
-      </form>
-      {{ old_archive_warc }} {{ new_archive_warc }}
-    </div>
-
-    <div style="display: block;" class="capture-wrapper">
-      <iframe class="archive-display" id="left_frame" src="{{ request1 }}#_diff_deleted_59" ></iframe>
-      <iframe class="archive-display" id="right_frame" src="{{ request2 }}#_diff_inserted_59" ></iframe>
-    </div>
-
+      <div style="display: block;" class="capture-wrapper">
+        <iframe class="archive-display" id="left_frame" src="{{ request1 }}" ></iframe>
+        <iframe class="archive-display" id="right_frame" src="{{ request2 }}" ></iframe>
+      </div>
+    {% elif this_page == 'compare' %}
+      <div style="display: block;" class="capture-wrapper">
+        <iframe class="archive-display" id="left_frame" src="{{ request1 }}#_diff_deleted_{{ compare_id }}" ></iframe>
+        <iframe class="archive-display" id="right_frame" src="{{ request2 }}#_diff_inserted_{{ compare_id }}" ></iframe>
+      </div>
+    {% endif %}
     </body>
 </html>
 
 {% block scripts %}
 
   <script>
-    var archive = { guid: "{{ old_archive.guid }}" };
-    var current_user = {id:"{{ request.user.id }}"};
     var resource_count = {
         total: parseInt("{{resource_count.total}}"),
         unchanged: parseInt("{{resource_count.unchanged}}"),
@@ -43,5 +45,41 @@
         modified: parseInt("{{resource_count.modified}}")
     };
   </script>
+
+  <script src="https://code.jquery.com/jquery-3.2.1.js" integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
+			  crossorigin="anonymous"></script>
+  <script src="{% static 'js/compare-warcs.js' %}"></script>
+
+  <script>
+  var showHighlightsButton = $("#show-highlights-btn.btn");
+
+  function init() {
+    var clicked = false;
+    if (showHighlightsButton) {
+      showHighlightsButton.click(function(evt){
+        clicked = !clicked;
+        showHighlights(clicked, evt.target.id);
+      });
+    }
+  }
+
+  function showHighlights(clicked) {
+    console.log("clicked!", clicked);
+
+    //var compare_dir = location.hash.split(/_diff_\w+_/)[1].split("_");
+    if (clicked) {
+          document.getElementById('left_frame').contentWindow.showArchiveHighlights('deleted');
+          document.getElementById('right_frame').contentWindow.showArchiveHighlights('inserted');
+        } else {
+          document.getElementById('left_frame').contentWindow.showArchiveHighlights('deleted');
+          document.getElementById('right_frame').contentWindow.showArchiveHighlights('inserted');
+        }
+  }
+
+  init();
+
+  </script>
+
+
 
 {% endblock %}
