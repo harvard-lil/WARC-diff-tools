@@ -27,10 +27,9 @@ button, input[type="submit"] {
     font-family: "Roboto", Helvetica, Arial, "Lucida Grande", sans-serif;
     font-weight: 700;
 }
-.dark-body input[type="submit"], .dark-body .btn, {
+.dark-body input[type="submit"], .dark-body .btn {
     border: 1px solid white;
     padding: 10px;
-
 }
 
 
