@@ -130,7 +130,7 @@ def get_minhash(str1, str2):
 #     return result
 #
 #
-def sort_resources(warc1_expanded, warc2_expanded):
+def sort_resources(archive1_expanded, archive2_expanded):
     """
     sorting dictionaries of collections into:
         - missing (no longer available)
@@ -141,12 +141,12 @@ def sort_resources(warc1_expanded, warc2_expanded):
 
     missing, added, modified, unchanged = dict(), dict(), dict(), dict()
 
-    for key in warc1_expanded.keys():
-        if key not in warc2_expanded.keys():
-            missing[key] = set(warc1_expanded[key])
+    for key in archive1_expanded.keys():
+        if key not in archive2_expanded.keys():
+            missing[key] = set(archive1_expanded[key])
         else:
-            set_a = set(warc1_expanded[key])
-            set_b = set(warc2_expanded[key])
+            set_a = set(archive1_expanded[key])
+            set_b = set(archive2_expanded[key])
 
             common = list(set_a & set_b)
 
@@ -160,7 +160,7 @@ def sort_resources(warc1_expanded, warc2_expanded):
                 added.pop(key, None)
 
             for url in common:
-                hashes_are_equal = warc1_expanded[key][url]['hash'] == warc2_expanded[key][url]['hash']
+                hashes_are_equal = archive1_expanded[key][url]['hash'] == archive2_expanded[key][url]['hash']
                 if hashes_are_equal:
                     if key in unchanged:
                         unchanged[key].append(url)

@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect
 from dashboard.utils import *
 
 from compare.warc_compare import *
-from compare.models import Compare, WDTArchive
+from compare.models import Compare, Archive
 
 
 def index(request):
@@ -27,21 +27,21 @@ def create(request):
     # create new comparison object
     archive_requested_urls = []
     for timestamp in (old_timestamp, new_timestamp):
-        wdtarchive = WDTArchive.objects.create(
+        archive = Archive.objects.create(
             timestamp=timestamp,
             submitted_url=submitted_url,
             warc_dir=timestamp + '_' + url_dirname)
 
-        wdtarchive.save()
-        wdtarchive.create_collections_dir()
+        archive.save()
+        archive.create_collections_dir()
 
         # if warc does not exist yet, get record url to record new warc
         # if it does, get warc url
-        archive_requested_urls.append(wdtarchive.get_record_or_local_url())
+        archive_requested_urls.append(archive.get_record_or_local_url())
 
-        archives.append(wdtarchive)
+        archives.append(archive)
 
-    compare_obj = Compare.objects.create(warc1=archives[0], warc2=archives[1])
+    compare_obj = Compare.objects.create(archive1=archives[0], archive2=archives[1])
     compare_obj.save()
 
     # return render(request, 'compare.html', data)
@@ -54,11 +54,11 @@ def view_pair(request, compare_id):
     context = {
         "this_page": "view_pair",
         "compare_id": compare_id,
-        "request1": compare_obj.warc1.get_record_or_local_url(),
-        "request2": compare_obj.warc2.get_record_or_local_url(),
-        "timestamp1": compare_obj.warc1.get_friendly_timestamp(),
-        "timestamp2": compare_obj.warc2.get_friendly_timestamp(),
-        "submitted_url": compare_obj.warc1.submitted_url
+        "request1": compare_obj.archive1.get_record_or_local_url(),
+        "request2": compare_obj.archive2.get_record_or_local_url(),
+        "timestamp1": compare_obj.archive1.get_friendly_timestamp(),
+        "timestamp2": compare_obj.archive2.get_friendly_timestamp(),
+        "submitted_url": compare_obj.archive1.submitted_url
     }
     return render(request, 'compare.html', context)
 
@@ -89,14 +89,18 @@ def compare(request, compare_id):
         Given a URL contained in this WARC, return a werkzeug BaseResponse for the URL as played back by pywb.
     """
     compare_obj = Compare.objects.get(id=compare_id)
-    archive1 = compare_obj.warc1
-    archive2 = compare_obj.warc2
+    archive1 = compare_obj.archive1
+    archive2 = compare_obj.archive2
 
     # replay archive to get HTML data
     wc = WARCCompare(archive1.get_full_warc_path(), archive2.get_full_warc_path())
     if not os.path.exists(get_compare_dir_path(compare_id)):
-        html1 = archive1.replay_url().data.decode()
-        html2 = archive2.replay_url().data.decode()
+        try:
+            html1 = archive1.replay_url().data.decode()
+            html2 = archive2.replay_url().data.decode()
+        except UnicodeDecodeError:
+            html1 = archive1.replay_url().data.decode('latin-1')
+            html2 = archive2.replay_url().data.decode('latin-1')
 
         html1 = rewrite_html(html1, archive1.warc_dir)
         html2 = rewrite_html(html2, archive2.warc_dir)
@@ -142,12 +146,12 @@ def compare(request, compare_id):
         'request1': archive1.get_record_or_local_url(),
         'request2': archive2.get_record_or_local_url(),
         'this_page': 'compare',
-        "timestamp1": compare_obj.warc1.get_friendly_timestamp(),
-        "timestamp2": compare_obj.warc2.get_friendly_timestamp(),
+        "timestamp1": compare_obj.archive1.get_friendly_timestamp(),
+        "timestamp2": compare_obj.archive2.get_friendly_timestamp(),
 
         # 'link_url': settings.HOST + '/' + archive1.guid,
         # 'protocol': protocol,
-        "submitted_url": compare_obj.warc1.submitted_url,
+        "submitted_url": compare_obj.archive1.submitted_url,
         'resources': resources,
         'resource_count': {
             'total': total_count[1],

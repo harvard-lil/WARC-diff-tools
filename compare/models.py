@@ -10,11 +10,11 @@ from django.conf import settings
 
 class Compare(models.Model):
     id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
-    warc1 = models.ForeignKey('WDTArchive', related_name='compare_warc1', null=True)
-    warc2 = models.ForeignKey('WDTArchive', related_name='compare_warc2', null=True)
+    archive1 = models.ForeignKey('Archive', related_name='compare_archive1', null=True)
+    archive2 = models.ForeignKey('Archive', related_name='compare_archive2', null=True)
 
 
-class WDTArchive(models.Model):
+class Archive(models.Model):
     # file name ending with warc.gz
     warc_name = models.TextField()
     # parent directory where warc.gz is contained
@@ -57,7 +57,10 @@ class WDTArchive(models.Model):
                 'framed_replay': False})
 
         client = Client(application, BaseResponse)
-        return client.get(self.get_local_url(), follow_redirects=True)
+        if url:
+            return client.get(url, follow_redirects=True)
+        else:
+            return client.get(self.get_local_url(), follow_redirects=True)
 
     def create_collections_dir(self):
         collection_path = self.get_full_collection_path()

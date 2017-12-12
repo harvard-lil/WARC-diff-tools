@@ -16,7 +16,9 @@
       <form action="/create/" method="post" class="col-centered">
         {% csrf_token %}
         <div class="row">
-          <input class="col-sm-10 col-centered" type="url" id="submitted_url" name="submitted_url" placeholder="URL goes here" value="">
+          <span class="col-sm-1"></span>
+          <input class="col-sm-10" type="url" id="submitted_url" name="submitted_url" placeholder="URL goes here" value="">
+          <span class="col-sm-1"></span>
         </div>
         <div class="row">
           <span class="col-sm-1"></span>
