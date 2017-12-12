@@ -56,4 +56,5 @@ wcwidth==0.1.7
 webassets==0.12.1
 webencodings==0.5.1
 Werkzeug==0.12.2
+whitenoise==3.3.1
 wsgiprox==1.4.1
