@@ -136,5 +136,16 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]
 
-# gzip 
+# gzip
 # STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
+try:
+    if os.environ['HEROKU']:
+        print("heroku!")
+        import dj_database_url
+        DATABASES['default'] = dj_database_url.config(default=os.environ['DATABASE_URL'])
+
+except KeyError:
+    print("key error occurred")
+    pass
