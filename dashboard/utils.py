@@ -39,7 +39,7 @@ def get_full_warc_path(archive_dirname):
 
 def rewrite_html(html_page, warc_dir):
     # TODO: build this out
-    tmp_html = re.sub('"%s' % warc_dir, '"archives/%s' % (settings.BASE_URL, warc_dir), html_page)
+    tmp_html = re.sub('"%s' % warc_dir, '"archives/%s' % warc_dir, html_page)
     # tmp_html = re.sub("localhost:8082/%s" % warc_dir, "localhost:8082/archives/%s" % warc_dir, tmp_html)
     # tmp_html = re.sub("localhost/", "localhost:8082/", tmp_html)
     # tmp_html = re.sub('href="//localhost', 'href="http://localhost', tmp_html)
