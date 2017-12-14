@@ -80,7 +80,6 @@ def single_link(request):
     # # Set up a werkzeug wsgi client.
     client = Client(application, BaseResponse)
     resp = client.get(full_url, follow_redirects=True)
-    # import ipdb; ipdb.set_trace()
     return render(resp.response, "single_link.html")
 
 

@@ -46,8 +46,11 @@ class Archive(models.Model):
     def get_local_url(self):
         return '/' + self.warc_dir + '/' + self.timestamp + '/' + self.submitted_url
 
+    def get_local_url(self):
+        return settings.ARCHIVES_ROUTE + '/' + self.warc_dir + '/' + self.timestamp + '/' + self.submitted_url
+
     def get_full_local_url(self):
-        return settings.BASE_URL + settings.ARCHIVES_ROUTE + '/' + self.warc_dir + '/' + self.timestamp + '/' + self.submitted_url
+        return settings.BASE_URL + self.get_local_url()
 
     def replay_url(self, url=None):
         application = FrontEndApp(
@@ -76,7 +79,7 @@ class Archive(models.Model):
 
     def get_record_or_local_url(self):
         if self.warc_exists():
-            return self.get_full_local_url()
+            return self.get_local_url()
         else:
             return self.get_recording_url()
 
