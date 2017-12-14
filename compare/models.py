@@ -24,7 +24,7 @@ class Archive(models.Model):
     submitted_url = models.URLField(max_length=1000)
 
     def get_recording_url(self):
-        return settings.BASE_URL + settings.ARCHIVES_ROUTE + '/' + self.warc_dir + '/' + 'record' + '/' + self.timestamp + "/" + self.submitted_url
+        return settings.ARCHIVES_ROUTE + '/' + self.warc_dir + '/' + 'record' + '/' + self.timestamp + "/" + self.submitted_url
 
     def get_full_collection_path(self):
         return settings.COLLECTIONS_DIR + '/' + self.warc_dir
