@@ -2,7 +2,8 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BASE_URL = 'http://localhost:8082'
+BASE_URL = 'localhost:8082'
+PROTOCOL = 'http'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
@@ -14,7 +15,6 @@ SECRET_KEY = 'dw*%vm9&g==4c+qi7_d_z4xoatc1zq2cmz7%4u53(+wa%%g2ly'
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-
 
 # Application definition
 
