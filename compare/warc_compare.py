@@ -1,15 +1,17 @@
 from htmldiffer import diff
 
 from toggles import shingle_settings
-import utils
+from compare import utils
 
+archive1_path = "/Users/aaizman/Documents/WARC-diff-tools/collections/20030110_example_com/archive/warc-diff-20171130212034161210-RSJ3M2I2.warc.gz"
+archive2_path = "/Users/aaizman/Documents/WARC-diff-tools/collections/20000110_example_com/archive/warc-diff-20171130210938217967-HKIUU7FF.warc.gz"
 
 class WARCCompare:
-    def __init__(self, warc1_path, warc2_path):
-        self.warc1 = utils.expand_warc(warc1_path)
-        self.warc2 = utils.expand_warc(warc2_path)
+    def __init__(self, archive1_path, archive2_path):
+        self.archive1 = utils.expand_warc(archive1_path)
+        self.archive2 = utils.expand_warc(archive2_path)
 
-        missing, added, modified, unchanged = utils.sort_resources(self.warc1, self.warc2)
+        missing, added, modified, unchanged = utils.sort_resources(self.archive1, self.archive2)
 
         self.resources = {
             'missing': missing,
@@ -31,12 +33,10 @@ class WARCCompare:
         if not urlpath2:
             urlpath2 = urlpath
 
-        payload1 = utils.get_payload(urlpath, self.warc1)
-        payload2 = utils.get_payload(urlpath2, self.warc2)
+        payload1 = utils.get_payload(urlpath, self.archive1)
+        payload2 = utils.get_payload(urlpath2, self.archive2)
 
-        decompressed_payload1 = utils.decompress_payload(payload1)
-        decompressed_payload2 = utils.decompress_payload(payload2)
-        d = diff.HTMLDiffer(decompressed_payload1, decompressed_payload2)
+        d = diff.HTMLDiffer(payload1, payload2)
 
         return d.deleted_diff, d.inserted_diff, d.combined_diff
 
@@ -76,18 +76,15 @@ class WARCCompare:
         """
         compared = dict()
 
-        p1 = utils.get_payload(urls[0], self.warc1)
-        p2 = utils.get_payload(urls[1], self.warc2)
+        p1 = utils.get_payload(urls[0], self.archive1)
+        p2 = utils.get_payload(urls[1], self.archive2)
 
-        dp1 = utils.decompress_payload(p1)
-        dp2 = utils.decompress_payload(p2)
-
-        cleaned_dp1 = utils.process_text(dp1)
-        cleaned_dp2 = utils.process_text(dp2)
+        cleaned_p1 = utils.process_text(p1)
+        cleaned_p2 = utils.process_text(p2)
 
         # shingle cleaned text
-        shingles1 = utils.shingle(cleaned_dp1, shingle_settings=shingle_settings)
-        shingles2 = utils.shingle(cleaned_dp2, shingle_settings=shingle_settings)
+        shingles1 = utils.shingle(cleaned_p1, shingle_settings=shingle_settings)
+        shingles2 = utils.shingle(cleaned_p2, shingle_settings=shingle_settings)
 
         if minhash:
             compared['minhash'] = utils.get_minhash(shingles1, shingles2)
@@ -119,6 +116,6 @@ class WARCCompare:
         """
         Returns a boolean according to recorded payload hash
         """
-        resource_one = utils.find_resource_by_url(urlpath, self.warc1)
-        resource_two = utils.find_resource_by_url(urlpath, self.warc2)
+        resource_one = utils.find_resource_by_url(urlpath, self.archive1)
+        resource_two = utils.find_resource_by_url(urlpath, self.archive2)
         return resource_one['hash'] != resource_two['hash']

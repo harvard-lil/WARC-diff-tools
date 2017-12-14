@@ -1,0 +1,67 @@
+body {
+  font-family: "Roboto", sans-serif;
+}
+
+body.dark-body {
+    background-color: #222;
+    color: white;
+}
+
+.dark-body input {
+    color: #222;
+}
+
+input {
+    margin: 0;
+    /*width: 456px;*/
+    /*float: left;*/
+    padding: 14px;
+    height: auto;
+    font-size: 20px;
+}
+
+button, input[type="submit"] {
+    padding: 16px 16px 16px 28px;
+    border-radius: 2px;
+    border: 1px solid rgba(100, 100, 100, 0.07);
+    font-family: "Roboto", Helvetica, Arial, "Lucida Grande", sans-serif;
+    font-weight: 700;
+}
+.dark-body input[type="submit"], .dark-body .btn {
+    border: 1px solid white;
+    padding: 10px;
+}
+
+
+.col-centered {
+    float: none;
+    margin: 0 auto;
+}
+
+button, a {
+    cursor: pointer;
+}
+
+header {
+    border-bottom: none;
+    /*min-height: 150px;*/
+    display: grid;
+}
+
+
+header .primary-segment {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+.dark-btn {
+    color: #222;
+    background-color: white;
+}
+
+.text-centered {
+    text-align: center;
+}

@@ -1,0 +1,47 @@
+<header class="header-dark container-fluid">
+  <div class="row">
+        <!--<button class="btn" id="show-highlights-btn">
+          Show highlights
+        </button>-->
+    <div class="col col-sm-8 col-primary">
+      <form action="/compare/{{ compare_id }}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="compare_id" value="{{ compare_id }}">
+        <input class="btn dark-btn" type="submit" value="compare">
+      </form>
+    </div>
+    <!--<div class="col col-sm-4 _main col-primary">
+        <div class="content">
+          <p class="creation">
+            {% if serve_type != 'image' and new_archive %}
+              <span class="action">
+                <span class="_verbose">
+                  <a href="">
+                  See the Screenshot View
+                  </a>
+                </span>
+              </span>
+            {% else %}
+              <span class="action">
+                {% if original_archive.primary_capture and original_archive.primary_capture.status == 'success' %}
+                {% endif %}
+              </span>
+            {% endif %}
+          </p>
+        </div>
+      </div>-->
+    <div class="col col-sm-2 col-primary">
+      <a target="_blank" href="{{ submitted_url }}">View live</a>
+    </div>
+    <div class="col col-sm-2 col-primary">
+      <a target="" href="/about">About</a>
+    </div>
+
+
+
+  </div>
+  <div class="row light-row">
+    <div class="col center-text col-sm-6 col-secondary">captured {{ timestamp1 }}</div>
+    <div class="col center-text col-sm-6 col-secondary">captured {{ timestamp2 }}</div>
+  </div>
+</header>

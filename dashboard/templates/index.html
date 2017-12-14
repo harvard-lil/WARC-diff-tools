@@ -1,0 +1,40 @@
+<html>
+    <head>
+      {% load static %}
+      <link rel="stylesheet" href="{% static 'css/normalize.css' %}">
+      <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+      <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+      <link rel="stylesheet" href="{% static 'css/general.css' %}">
+      <link rel="stylesheet" href="{% static 'css/dashboard-styles.css' %}">
+
+        <title>
+          Compare web archives
+        </title>
+    </head>
+    <body class="dark-body text-centered">
+    <h1>WARC Diff Tools</h1>
+      <form action="/create/" method="post" class="col-centered">
+        {% csrf_token %}
+        <div class="row">
+          <span class="col-sm-1"></span>
+          <input class="col-sm-10" type="url" id="submitted_url" name="submitted_url" placeholder="URL goes here" value="">
+          <span class="col-sm-1"></span>
+        </div>
+        <div class="row">
+          <span class="col-sm-1"></span>
+          <input class="col-sm-5"
+                 type="date" id="old_date"
+                 name="old_date" value="">
+          <input class="col-sm-5"
+                 type="date" id="new_date"
+                 name="new_date" value="">
+          <span class="col-sm-1"></span>
+        </div>
+        <div class="row">
+          <span class="col-sm-1"></span>
+          <input class="col-sm-10" type="submit" value="SUBMIT">
+          <span class="col-sm-1"></span>
+        </div>
+      </form>
+    </body>
+</html>

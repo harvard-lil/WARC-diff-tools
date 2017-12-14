@@ -4,4 +4,3 @@ assets/*
 *.idea
 collections/*
 !collections/README.md
-*.extras
