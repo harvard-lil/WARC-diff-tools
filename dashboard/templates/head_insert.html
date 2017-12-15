@@ -33,20 +33,15 @@
   }
 {% endif %}
 
-console.log("HEAD INSERT, moving locations for comparison")
-
-
 document.addEventListener("DOMContentLoaded",
     function() {
       if (location.hash.includes("_diff_")) {
-        var compare_dir = location.hash.split(/_diff_\w+_/)[1].split("_")
-        var new_location = "http://localhost:8082/static/" + compare_dir + "/"
+        var compare_dir = location.hash.split(/_diff_\w+_/)[1].split("_");
+        var new_location = "{{ host_prefix }}/{{ static_path }}/" + compare_dir + "/";
         if (location.hash.includes("_deleted_")) {
-          location.href = new_location + "deleted.html"
-          //console.log("redirect to deleted here")
+          location.href = new_location + "deleted.html";
         } else {
-          location.href = new_location + "inserted.html"
-          //console.log("redirect to inserted here")
+          location.href = new_location + "inserted.html";
         }
       }
     }
