@@ -7,7 +7,7 @@ DATABASES = {
     'default': dj_database_url.config(default=os.environ['DATABASE_URL']),
 }
 
-INSTALLED_APPS = INSTALLED_APPS + ['storages']
+# INSTALLED_APPS = INSTALLED_APPS + ['storages']
 BASE_URL = os.environ.get('BASE_URL')
 DEBUG = os.environ.get('DEBUG')
 PROTOCOL = os.environ.get('PROTOCOL')
