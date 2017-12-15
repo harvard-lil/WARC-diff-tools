@@ -11,18 +11,6 @@ def format_date_for_memento(date_string):
     return d.strftime('%Y%m%d')
 
 
-def url_to_dirname(submitted_url):
-    """
-    Make a directory-friendly url name
-    http://example.com should return example_com
-    """
-    url_parts = urlparse(submitted_url)
-    domain = url_parts.netloc.replace(".", "_")
-    path = url_parts.path.replace("/", "_")
-    query = url_parts.query.replace("=", "_")
-    return domain + path + query
-
-
 def get_full_warc_path(archive_dirname):
     """
     Takes named archive dir (should consist of timestamp_submitted_url)
@@ -39,11 +27,8 @@ def get_full_warc_path(archive_dirname):
 
 def rewrite_html(html_page, warc_dir):
     # TODO: build this out
-    tmp_html = re.sub('"%s' % warc_dir, '"archives/%s' % warc_dir, html_page)
-    # tmp_html = re.sub("localhost:8082/%s" % warc_dir, "localhost:8082/archives/%s" % warc_dir, tmp_html)
-    # tmp_html = re.sub("localhost/", "localhost:8082/", tmp_html)
-    # tmp_html = re.sub('href="//localhost', 'href="http://localhost', tmp_html)
-    return re.sub("%s" % settings.BASE_URL, "%s/archives/" % settings.BASE_URL, tmp_html)
+    tmp_html = re.sub(warc_dir, "archives/{0}".format(warc_dir), html_page)
+    return re.sub("http://localhost/", "%s://%s%s" % (settings.PROTOCOL, settings.BASE_URL, settings.ARCHIVES_ROUTE), tmp_html)
 
 
 def write_to_static(new_string, filename, compare_id=None):

@@ -112,18 +112,21 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
-# PROJECT_ROOT is the absolute path to the perma_web folder
 # We determine this robustly thanks to http://stackoverflow.com/a/2632297
-import sys
-PROJECT_ROOT = os.path.dirname(os.path.realpath(''))
+
+PROJECT_ROOT = os.path.abspath(os.path.dirname(__name__))
+SERVICES_DIR = os.path.abspath(os.path.join(PROJECT_ROOT, 'services'))
+# user generated warc files
+MEDIA_ROOT = os.path.join(SERVICES_DIR, 'django/generated_assets/')
+COLLECTIONS_DIR = os.path.join(MEDIA_ROOT, 'collections')
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static-collected')                # where to store collected static files
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
-COLLECTIONS_DIR = os.path.join(BASE_DIR, 'collections')
 WARC_ARCHIVE_DIR = '/archive'
 ARCHIVES_ROUTE = '/archives'
 
+ARCHIVES_DIR_STRING = 'warc-diff-tools-'
 
 # where to look for static files (in addition to app/static/)
 STATICFILES_DIRS = [

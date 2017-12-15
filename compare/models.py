@@ -17,17 +17,19 @@ class Compare(models.Model):
 class Archive(models.Model):
     # file name ending with warc.gz
     warc_name = models.TextField()
-    # parent directory where warc.gz is contained
-    warc_dir = models.TextField()
     # user inputted timestamp, not a django timestamp object
-    timestamp = models.CharField(max_length=255)
-    submitted_url = models.URLField(max_length=1000)
+    timestamp = models.CharField(max_length=255, db_index=True)
+    submitted_url = models.URLField(max_length=2000, db_index=True)
+
+    def get_warc_dir(self):
+        return settings.ARCHIVES_DIR_STRING + str(self.id)
 
     def get_recording_url(self):
-        return settings.ARCHIVES_ROUTE + '/' + self.warc_dir + '/' + 'record' + '/' + self.timestamp + "/" + self.submitted_url
+        return settings.ARCHIVES_ROUTE + '/' + self.get_warc_dir() + '/' + 'record' + '/' + self.timestamp + "/" + self.submitted_url
 
     def get_full_collection_path(self):
-        return settings.COLLECTIONS_DIR + '/' + self.warc_dir
+        tmp_path = os.path.join(settings.COLLECTIONS_DIR,  self.get_warc_dir())
+        return os.path.join(settings.PROJECT_ROOT, tmp_path)
 
     def get_full_warc_path(self):
         full_archive_parent_path = self.get_full_collection_path() + settings.WARC_ARCHIVE_DIR
@@ -44,13 +46,13 @@ class Archive(models.Model):
         return full_archive_parent_path + "/" + self.warc_name
 
     def get_local_url(self):
-        return '/' + self.warc_dir + '/' + self.timestamp + '/' + self.submitted_url
-
-    def get_local_url(self):
-        return settings.ARCHIVES_ROUTE + '/' + self.warc_dir + '/' + self.timestamp + '/' + self.submitted_url
+        return settings.ARCHIVES_ROUTE + '/' + self.get_warc_dir() + '/' + self.timestamp + '/' + self.submitted_url
 
     def get_full_local_url(self):
         return settings.BASE_URL + self.get_local_url()
+
+    def get_replay_url(self):
+        return '/' + self.get_warc_dir() + '/' + self.timestamp + '/' + self.submitted_url
 
     def replay_url(self, url=None):
         application = FrontEndApp(
@@ -63,7 +65,7 @@ class Archive(models.Model):
         if url:
             return client.get(url, follow_redirects=True)
         else:
-            return client.get(self.get_local_url(), follow_redirects=True)
+            return client.get(self.get_replay_url(), follow_redirects=True)
 
     def create_collections_dir(self):
         collection_path = self.get_full_collection_path()
@@ -72,8 +74,7 @@ class Archive(models.Model):
 
     def warc_exists(self):
         try:
-            full_warc_path = self.get_full_warc_path()
-            return os.path.exists(full_warc_path)
+            return os.path.exists(self.get_full_warc_path())
         except FileNotFoundError:
             return False
 

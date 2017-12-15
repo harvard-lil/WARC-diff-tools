@@ -22,15 +22,12 @@ def create(request):
     old_timestamp = format_date_for_memento(request.POST.get('old_date'))
     new_timestamp = format_date_for_memento(request.POST.get('new_date'))
     archives = []
-    url_dirname = url_to_dirname(submitted_url)
 
-    # create new comparison object
     archive_requested_urls = []
     for timestamp in (old_timestamp, new_timestamp):
         archive = Archive.objects.create(
             timestamp=timestamp,
-            submitted_url=submitted_url,
-            warc_dir=timestamp + '_' + url_dirname)
+            submitted_url=submitted_url)
 
         archive.save()
         archive.create_collections_dir()
@@ -38,7 +35,6 @@ def create(request):
         # if warc does not exist yet, get record url to record new warc
         # if it does, get warc url
         archive_requested_urls.append(archive.get_record_or_local_url())
-
         archives.append(archive)
 
     compare_obj = Compare.objects.create(archive1=archives[0], archive2=archives[1])
@@ -101,8 +97,8 @@ def compare(request, compare_id):
             html1 = archive1.replay_url().data.decode('latin-1')
             html2 = archive2.replay_url().data.decode('latin-1')
 
-        html1 = rewrite_html(html1, archive1.warc_dir)
-        html2 = rewrite_html(html2, archive2.warc_dir)
+        html1 = rewrite_html(html1, archive1.get_warc_dir())
+        html2 = rewrite_html(html2, archive2.get_warc_dir())
         # ignore guids in html
         # diff_settings.EXCLUDE_STRINGS_A.append(str(old_guid))
         # diff_settings.EXCLUDE_STRINGS_A.append(str(old_guid))

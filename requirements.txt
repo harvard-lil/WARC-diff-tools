@@ -41,7 +41,7 @@ pyOpenSSL==17.4.0
 pytest==3.3.0
 python-hashes==0.1
 pytz==2017.3
--e git://github.com/ikreymer/pywb@efda3df640e00af898f856a49c83496a3fccb00e#egg=pywb
+-e git://github.com/anastasia/pywb@c5388487158ecb44733809fff3e5861852688183#egg=pywb
 PyYAML==3.12
 redis==2.10.6
 requests==2.18.4
