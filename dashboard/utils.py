@@ -27,8 +27,8 @@ def get_full_warc_path(archive_dirname):
 
 def rewrite_html(html_page, warc_dir):
     # TODO: build this out
-    # tmp_html = re.sub(warc_dir, "archives/{0}".format(warc_dir), html_page)
-    return re.sub("http://localhost/", "%s://%s%s/" % (settings.PROTOCOL, settings.BASE_URL, settings.ARCHIVES_ROUTE), html_page)
+    tmp_html = re.sub("http://localhost/", "%s://%s%s/" % (settings.PROTOCOL, settings.BASE_URL, settings.ARCHIVES_ROUTE), html_page)
+    return re.sub(warc_dir, "archives/{0}".format(warc_dir), tmp_html)
 
 
 def write_to_static(new_string, filename, compare_id=None):
