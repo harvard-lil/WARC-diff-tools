@@ -10,20 +10,28 @@ WARC comparison works much faster in pypy (installation instructions here: http:
 Install:
 ```
 $ git clone https://github.com/harvard-lil/WARC-diff-tools
+$ cd WARC-diff-tools
+$ cp config/settings.example.py config/settings.py
 $ pip install -r requirements.txt
 ```
 
+
+Set up DB:
+```
+$ psql
+$ createdb warcdiff
+```
+
 ### Examples
-To set up:
+To set up (in python repl):
 ```python
-$ python
->> from warc_compare import WARCCompare
->> wc = WARCCompare('path/to/older/warc', '/path/to/newer/warc')
+from warc_compare import WARCCompare
+wc = WARCCompare('path/to/older/warc', '/path/to/newer/warc')
 ```
 
 You now have access to a list of resources in the WARCS:
 ```python
->> wc.resources
+wc.resources
 ```
 output is a list of resources split up by the keys:
 - missing (resources that existed in the old WARC but have been removed, meaning maybe they are no longer there or maybe the path has changed)
