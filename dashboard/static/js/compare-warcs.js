@@ -29,18 +29,18 @@ function handleShowDetails (open, btn_id) {
   var resource_type = btn_id.split("resource-count-")[1];
   if (open) {
     $(".comparison-table").show();
-    if (resource_type === "modified") {
-      $(".resource-modified").show();
-      $(".resource-added").hide();
-      $(".resource-missing").hide();
+    if (resource_type === "changed") {
+      $(".resource-c").show();
+      $(".resource-a").hide();
+      $(".resource-m").hide();
     } else if (resource_type === "added") {
-      $(".resource-added").show();
-      $(".resource-modified").hide();
-      $(".resource-missing").hide();
+      $(".resource-a").show();
+      $(".resource-c").hide();
+      $(".resource-m").hide();
     } else if (resource_type === "missing") {
-      $(".resource-missing").show();
-      $(".resource-modified").hide();
-      $(".resource-added").hide();
+      $(".resource-m").show();
+      $(".resource-c").hide();
+      $(".resource-a").hide();
     } else if (resource_type === "total") {
       $(".resource-row").show();
     }

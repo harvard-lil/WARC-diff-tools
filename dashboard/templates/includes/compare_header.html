@@ -5,7 +5,7 @@
         <div class="content">
             File changes:
             <br/>
-            <button id="resources-count-added"
+            <button id="resource-count-added"
                     class="btn btn-ui-small btn-circle btn-resource-details color-added"
                     type="button">
               +{{ resource_count.added }}
@@ -15,10 +15,10 @@
                     type="button">
               -{{ resource_count.missing }}
             </button>
-            <button id="resource-count-modified"
-                    class="btn btn-ui-small btn-circle btn-resource-details color-modified"
+            <button id="resource-count-changed"
+                    class="btn btn-ui-small btn-circle btn-resource-details color-changed"
                     type="button">
-              *{{ resource_count.modified }}
+              *{{ resource_count.changed }}
             </button>
             <button id="resource-count-total"
                     class="btn btn-ui-small btn-circle btn-resource-details color-total"
@@ -34,7 +34,7 @@
     </div>
     <div class="col col-sm-4 col-primary">
       <h2>Comparing web archive records</h2>
-      <table class="table comparison-table">
+      <table class="table comparison-table color-white">
         <thead>
           <tr>
             <th>type</th>
@@ -45,7 +45,6 @@
         <tbody>
           {% for resource in resources %}
           <tr class="resource-{{ resource.status }} resource-row">
-            <!--<th scope="row">1</th>-->
             <td class="resource-content-type">
               {{ resource.content_type }}
             </td>

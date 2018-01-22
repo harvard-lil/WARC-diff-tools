@@ -88,7 +88,7 @@ def compare(request, compare_id):
     archive2 = compare_obj.archive2
 
     # replay archive to get HTML data
-    wc = WARCCompare(archive1.get_full_warc_path(), archive2.get_full_warc_path())
+    # wc = WARCCompare(archive1.get_full_warc_path(), archive2.get_full_warc_path())
     if not os.path.exists(get_compare_dir_path(compare_id)):
         try:
             html1 = archive1.replay_url().data.decode()
@@ -113,28 +113,8 @@ def compare(request, compare_id):
         write_to_static(diffed.combined_diff, 'combined.html', compare_id=compare_id)
 
     # # TODO: change all '/' in url to '_' to save
-    total_count, unchanged_count, missing_count, added_count, modified_count = wc.count_resources()
-    resources = []
-    for status in wc.resources:
-        for content_type in wc.resources[status]:
-            if "javascript" in content_type:
-                content_type_str = "script"
-            elif "image" in content_type:
-                content_type_str = "img"
-            elif "html" in content_type:
-                content_type_str = "html"
-            else:
-                content_type_str = content_type
-            for url in wc.resources[status][content_type]:
-                resource = {
-                    'url': url,
-                    'content_type': content_type_str,
-                    'status': status,
-                }
-                if url == archive1.submitted_url:
-                    resources = [resource] + resources
-                else:
-                    resources.append(resource)
+    total_count, unchanged_count, missing_count, added_count, changed_count = compare_obj.count_resources()
+    resources = list(compare_obj.archive1.resources.all()) + list(compare_obj.archive2.resources.all())
 
     context = {
         'compare_id': compare_id,
@@ -148,12 +128,13 @@ def compare(request, compare_id):
         # 'protocol': protocol,
         "submitted_url": compare_obj.archive1.submitted_url,
         'resources': resources,
+        'resources_choices': dict(resources[0].STATUS_CHOICES),
         'resource_count': {
             'total': total_count[1],
             'unchanged': unchanged_count,
             'missing': missing_count,
             'added': added_count,
-            'modified': modified_count,
+            'changed': changed_count,
         },
     }
 

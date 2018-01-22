@@ -31,6 +31,9 @@ header.header-dark {
   color: white;
 }
 
+header .primary-segment {
+}
+
 header .secondary-segment {
   background: white;
   color: #2D76EE;
@@ -139,12 +142,12 @@ header > .row > .col-primary {
 }
 
 
-.btn-circle.color-modified {
+.btn-circle.color-changed {
   color: #F7FF6F;
   border-color: #F7FF6F;
 }
 
-.btn-circle.color-modified:hover {
+.btn-circle.color-changed:hover {
   background: #F7FF6F;
   color: #222;
 }
@@ -165,6 +168,7 @@ td {
   border: 1px solid rgba(100, 100, 100, 0.07);
 }
 
+
 .comparison-table {
   width: 100%;
   border-collapse: collapse;
@@ -172,6 +176,11 @@ td {
   display: none;
   position: absolute;
 }
+
+.comparison-table.color-white a {
+    color: #222;
+}
+
 
 .comparison-table tr {
   margin: 10px;
@@ -185,15 +194,15 @@ td {
   padding: 10px 20px;
 }
 
-.comparison-table td.resource-modified {
+.comparison-table td.resource-c {
   background: #F7FF6F;
 }
 
-.comparison-table td.resource-missing {
+.comparison-table td.resource-m {
   background: #DD671A;
 }
 
-.comparison-table td.resource-added {
+.comparison-table td.resource-a {
   background: #77AE3A;
 }
 

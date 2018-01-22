@@ -19,6 +19,60 @@ class Compare(models.Model):
     def __str__(self):
         return 'Compare %s + %s' % (self.archive1.id, self.archive2.id)
 
+    def count_resources(self):
+        if not self.completed:
+            self.sort_resources()
+        old_total = self.archive1.resources.count()
+        new_total = self.archive2.resources.count()
+        total = (old_total, new_total)
+        # arbitrarily choosing archive1, nums should be the same
+        unchanged = self.archive1.resources.filter(status='u').count()
+        missing = self.archive1.resources.filter(status='m').count()
+        added = self.archive2.resources.filter(status='a').count()
+        # arbitrarily choosing archive2, nums should be the same
+        changed = self.archive2.resources.filter(status='c').count()
+        return total, unchanged, missing, added, changed
+
+    def sort_resources(self):
+        if not self.completed:
+            resources1 = self.archive1.resources.all()
+            resources1_urls = resources1.values_list('url', flat=True)
+            resources2 = self.archive2.resources.all()
+            resources2_urls = resources2.values_list('url', flat=True)
+            # for resource in resources:
+            for resource in resources1:
+                if resource.url not in resources2_urls:
+                    # resource is missing
+                    resource.status = 'm'
+                else:
+                    # TODO: figure out what to do if there are two
+                    # or more of the same url
+                    resource2 = resources2.filter(url=resource.url)[0]
+                    if resource2.hash == resource.hash:
+                        resource2.status = 'u'
+                        resource2.save()
+                        resource.hash = 'u'
+                    else:
+                        # TODO: kick off process here that compares
+                        # in depth, creates resourcecompare obj
+                        resource2.status = 'c'
+                        resource2.save()
+                        resource.status = 'c'
+                resource.save()
+            # get all the remaining resources from archive2
+            # that have the status of pending
+            # at this point they should all be newly added
+            # set status to 'a' for added
+            for resource in resources2.filter(status='p'):
+                if resource.url not in resources1_urls:
+                    # resource has been added, wasn't present before
+                    resource.status = 'a'
+                    resource.save()
+            self.completed = True
+            self.save()
+        else:
+            print('comparing is finished')
+            return
 
 
 class Archive(models.Model):
