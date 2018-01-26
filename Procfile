@@ -1,1 +1,0 @@
-web: gunicorn --log-level debug --access-logfile - -k gevent config.wsgi

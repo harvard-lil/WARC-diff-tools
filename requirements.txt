@@ -1,9 +1,12 @@
+amqp==2.2.2
 appnope==0.1.0
 asn1crypto==0.23.0
 attrs==17.3.0
 bcrypt==3.1.4
 beautifulsoup4==4.6.0
+billiard==3.5.0.3
 brotlipy==0.7.0
+celery==4.1.0
 certauth==1.2
 certifi==2017.11.5
 cffi==1.11.2
@@ -12,15 +15,19 @@ cryptography==2.1.3
 decorator==4.1.2
 dj-database-url==0.4.2
 Django==1.11.6
+django-celery-results==1.0.1
+django-storages==1.6.5
 Fabric3==1.13.1.post1
 gevent==1.2.2
 greenlet==0.4.12
-gunicorn==19.7.1
 htmldiffer==0.25.2
 idna==2.6
 ipdb==0.10.3
+ipython==6.2.1
+ipython-genutils==0.2.0
 jedi==0.11.0
 Jinja2==2.8.1
+kombu==4.1.0
 MarkupSafe==1.0
 -e git://github.com/anastasia/minhash.git@e8a3bd8f918088b6373a8638d719d61e20673920#egg=minhash
 paramiko==2.4.0
@@ -53,6 +60,7 @@ surt==0.3.0
 tldextract==2.2.0
 traitlets==4.3.2
 urllib3==1.22
+vine==1.1.4
 warcio==1.5.0
 wcwidth==0.1.7
 webassets==0.12.1
