@@ -1,16 +1,10 @@
-import os
 import re
-import zlib
-import warcio as warc
-from warcio.archiveiterator import ArchiveIterator
-import difflib
-# from httplib import HTTPResponse
-# from StringIO import StringIO
-from bs4 import BeautifulSoup
-# from hashes.simhash import simhash
+
+from django.conf import settings
 import minhash
 from toggles import hashfunc, simhash_bytes, shingle_settings, minhash_hash_num
-#
+from htmldiffer import diff
+
 #
 # class FakeSocket():
 #     def __init__(self, response_str):
@@ -60,6 +54,14 @@ from toggles import hashfunc, simhash_bytes, shingle_settings, minhash_hash_num
 #     return sim1.similarity(sim2)
 #
 #
+
+def decode_data(data):
+    try:
+        return data.decode()
+    except UnicodeDecodeError:
+        return data.decode('latin-1')
+
+
 def shingle(text, shingle_settings=shingle_settings):
     """
     tokenizes and shingles
@@ -192,44 +194,7 @@ def get_payload_headers(payload):
     return header_dict
 #
 #
-def expand_warc(warc_path):
-    """
-    expand warcs into dicts with compressed responses
-    organized by content type
-    Each response obj consists of compressed payload and SHA1
-    """
-    responses = dict()
-
-    with open(warc_path, 'rb') as stream:
-        for record in ArchiveIterator(stream):
-            if record.rec_type != 'response':
-                continue
-
-            print(record.rec_headers.get_header('WARC-Target-URI'))
-
-            payload = record.content_stream().read()
-            # headers = get_payload_headers(payload)
-            headers = record.http_headers
-            try:
-                # content_type = format_content_type(headers['Content-Type'])
-                content_type = headers.get_header('Content-Type')
-            except KeyError:
-                # HACK: figure out a better solution for unknown content types
-                content_type = "unknown"
-
-            new_record = {
-                'payload': payload,
-                'headers': headers,
-                'hash': record.rec_headers.get('warc-payload-digest')
-            }
-            url = record.rec_headers.get_header('WARC-Target-URI')
-            if content_type in responses:
-                responses[content_type][url] = new_record
-            else:
-                responses[content_type] = {url: new_record}
-
-    return responses
-
+# def expand_warc(warc_path):
 
 def find_resource_by_url(urlpath, expanded_warc):
     """
@@ -245,6 +210,12 @@ def get_payload(urlpath, expanded_warc):
     return find_resource_by_url(urlpath, expanded_warc)['payload'].decode()
 
 
+def rewrite_html(html_page, warc_dir):
+    # TODO: build this out
+    tmp_html = re.sub("http://localhost/", "%s://%s%s/" % (settings.PROTOCOL, settings.BASE_URL, settings.ARCHIVES_ROUTE), html_page)
+    return re.sub(warc_dir, "archives/{0}".format(warc_dir), tmp_html)
+
+
 def format_content_type(content_type):
     """
     removes parameter and whitespaces
@@ -258,3 +229,46 @@ def format_content_type(content_type):
 # def sequence_match(s1, s2):
 #     seq = difflib.SequenceMatcher(None, s1, s2)
 #     return seq.ratio() * 100
+
+
+def get_html_diff(payload1, payload2):
+    d = diff.HTMLDiffer(payload1, payload2)
+    return d.deleted_diff, d.inserted_diff, d.combined_diff
+
+
+def calculate_similarity_pair(payload1, payload2, minhash=True, simhash=False, sequence_match=False, shingle_settings=shingle_settings):
+    """
+    checking all common resources for changes
+    image checking is broken for now, requires a separate handling
+
+    :param minhash: True or False, default True
+    :param simhash: True or False, default True
+    :param sequence_match: True or False, default True
+    :param shingle_settings: see `shingle_settings` in toggles.py
+
+    :return:
+        { resource_url_path:
+            "hash_change" : True or False (sha1 change)
+            "minhash": minhash_coefficient,
+            "simhash": simhash_distance,
+        }
+    """
+    compared = dict()
+
+    cleaned_p1 = process_text(payload1)
+    cleaned_p2 = process_text(payload2)
+
+    # shingle cleaned text
+    shingles1 = shingle(cleaned_p1, shingle_settings=shingle_settings)
+    shingles2 = shingle(cleaned_p2, shingle_settings=shingle_settings)
+
+    if minhash:
+        compared['minhash'] = get_minhash(shingles1, shingles2) * 100
+
+    # if simhash:
+    #     compared['simhash'] = get_simhash(shingles1, shingles2)
+    #
+    # if sequence_match:
+    #     compared['sequence_matched'] = sequence_match(cleaned_dp1, cleaned_dp2)
+
+    return compared

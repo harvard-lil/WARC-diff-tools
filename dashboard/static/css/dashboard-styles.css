@@ -168,6 +168,10 @@ td {
   border: 1px solid rgba(100, 100, 100, 0.07);
 }
 
+.comparison-container {
+  max-height: 300px;
+  overflow-y: scroll;
+}
 
 .comparison-table {
   width: 100%;
@@ -175,12 +179,16 @@ td {
   background: white;
   display: none;
   position: absolute;
+  z-index: 1;
 }
 
 .comparison-table.color-white a {
     color: #222;
 }
 
+.comparison-table tbody {
+  background: white;
+}
 
 .comparison-table tr {
   margin: 10px;
@@ -194,15 +202,15 @@ td {
   padding: 10px 20px;
 }
 
-.comparison-table td.resource-c {
+.comparison-table td.resource-changed {
   background: #F7FF6F;
 }
 
-.comparison-table td.resource-m {
+.comparison-table td.resource-missing {
   background: #DD671A;
 }
 
-.comparison-table td.resource-a {
+.comparison-table td.resource-added {
   background: #77AE3A;
 }
 

@@ -1,5 +1,6 @@
 import os
 import re
+import tempfile
 from urllib.parse import urlparse
 from datetime import datetime
 
@@ -25,12 +26,6 @@ def get_full_warc_path(archive_dirname):
     return warc_path
 
 
-def rewrite_html(html_page, warc_dir):
-    # TODO: build this out
-    tmp_html = re.sub("http://localhost/", "%s://%s%s/" % (settings.PROTOCOL, settings.BASE_URL, settings.ARCHIVES_ROUTE), html_page)
-    return re.sub(warc_dir, "archives/{0}".format(warc_dir), tmp_html)
-
-
 def write_to_static(new_string, filename, compare_id=None):
     dirpath = create_compare_dir(str(compare_id))
     filepath = os.path.join(dirpath, filename)
@@ -49,3 +44,13 @@ def create_compare_dir(compare_id):
 
 def get_compare_dir_path(compare_id):
     return os.path.join(settings.STATIC_DIR, compare_id)
+
+
+def write_to_temp_file(content):
+    f = tempfile.NamedTemporaryFile(delete=False)
+    if type(content) is bytes:
+        f.write(content)
+    else:
+        content = bytes(content, 'utf-8')
+        f.write(content)
+    return f.name

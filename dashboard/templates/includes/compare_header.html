@@ -34,34 +34,37 @@
     </div>
     <div class="col col-sm-4 col-primary">
       <h2>Comparing web archive records</h2>
-      <table class="table comparison-table color-white">
-        <thead>
-          <tr>
-            <th>type</th>
-            <th>File URL</th>
-            <th>% change</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for resource in resources %}
-          <tr class="resource-{{ resource.status }} resource-row">
-            <td class="resource-content-type">
-              {{ resource.content_type }}
-            </td>
-            <td>
-              <a href="?q={{resource.url}}">
-                {{ resource.url}}
-              </a>
-            </td>
-            {% if resource.change %}
-              <td>{{ resource.change}}</td>
-            {% else %}
-              <td class="resource-{{ resource.status}}">{{ resource.status}}</td>
-            {% endif %}
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+      <div class="comparison-container container">
+        <table class="table comparison-table color-white">
+          <thead>
+            <tr>
+              <th>type</th>
+              <th>File URL</th>
+              <th>% change</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in resources %}
+              <tr class="resource-{{ r.status }} resource-row">
+                <td class="resource-content-type">
+                  {{ r.content_type }}
+                </td>
+                <td>
+                  <a href="?q={{r.url}}">
+                    {{ r.url}}
+                  </a>
+                </td>
+                {% if r.change %}
+                  <td>{{ r.change}}</td>
+                {% else %}
+                  <td class="resource-{{ r.status }}">{{ r.status }}</td>
+                {% endif %}
+              </tr>
+
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
     <div class="col col-sm-2 col-primary">
       <a target="_blank" href="{{ submitted_url }}" class="light-link">View live</a>

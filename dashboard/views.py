@@ -1,12 +1,13 @@
-import requests
+from werkzeug.test import Client
+from werkzeug.wrappers import BaseResponse
+from pywb.apps.frontendapp import FrontEndApp
 
-from django.shortcuts import render, redirect, reverse
-from django.http import HttpResponseRedirect
+from django.shortcuts import render, redirect
 
 from dashboard.utils import *
 
-from compare.warc_compare import *
-from compare.models import Compare, Archive
+from compare.models import Compare, Archive, ResourceCompare
+from compare.tasks import expand_warc, call_task, create_html_diffs, count_resources, compare_resource
 
 
 def index(request):
@@ -30,39 +31,52 @@ def create(request):
             submitted_url=submitted_url)
 
         archive.save()
+
+        # unique dir for pywb to record warcs
         archive.create_collections_dir()
 
         # if warc does not exist yet, get record url to record new warc
         # if it does, get warc url
         archive_requested_urls.append(archive.get_record_or_local_url())
+
+        # expand warc in background for later use
+        call_task(expand_warc.s(archive.id))
+
         archives.append(archive)
 
     compare_obj = Compare.objects.create(archive1=archives[0], archive2=archives[1])
     compare_obj.save()
 
-    # return render(request, 'compare.html', data)
-
     return redirect('/view/%s' % compare_obj.id)
 
 
 def view_pair(request, compare_id):
-    compare_obj = Compare.objects.get(id=compare_id)
+    comp = Compare.objects.get(id=compare_id)
+    archive1 = comp.archive1
+    archive2 = comp.archive2
+    # create initial comparison of submitted_url html for faster display
+    submitted_url_resource1 = archive1.resources.get(submitted_url=True)
+    submitted_url_resource2 = archive2.resources.get(submitted_url=True)
+
+    rc, created = ResourceCompare.objects.get_or_create(
+        resource1=submitted_url_resource1,
+        resource2=submitted_url_resource2)
+    call_task(create_html_diffs.s(compare_id, rc.id))
+    call_task(count_resources.s(comp.id))
+
     context = {
         "this_page": "view_pair",
         "compare_id": compare_id,
-        "request1": compare_obj.archive1.get_record_or_local_url(),
-        "request2": compare_obj.archive2.get_record_or_local_url(),
-        "timestamp1": compare_obj.archive1.get_friendly_timestamp(),
-        "timestamp2": compare_obj.archive2.get_friendly_timestamp(),
-        "submitted_url": compare_obj.archive1.submitted_url
-    }
+        "request1": archive1.get_record_or_local_url(),
+        "request2": archive2.get_record_or_local_url(),
+        "timestamp1": archive1.get_friendly_timestamp(),
+        "timestamp2": archive2.get_friendly_timestamp(),
+        "submitted_url": archive1.submitted_url}
+
     return render(request, 'compare.html', context)
 
 
 def single_link(request):
-    from werkzeug.test import Client
-    from werkzeug.wrappers import BaseResponse
-    from pywb.apps.frontendapp import FrontEndApp
     # full_url = "http://localhost:8082/archives/20000110_example_com/20000110/http://example.com"
 
     full_url = "/20000110_example_com/20000110/http://example.com"
@@ -81,45 +95,59 @@ def single_link(request):
 
 def compare(request, compare_id):
     """
-        Given a URL contained in this WARC, return a werkzeug BaseResponse for the URL as played back by pywb.
+    Given a URL contained in this WARC, return a werkzeug BaseResponse for the URL as played back by pywb.
     """
     compare_obj = Compare.objects.get(id=compare_id)
-    archive1 = compare_obj.archive1
-    archive2 = compare_obj.archive2
 
-    # replay archive to get HTML data
-    # wc = WARCCompare(archive1.get_full_warc_path(), archive2.get_full_warc_path())
-    if not os.path.exists(get_compare_dir_path(compare_id)):
-        try:
-            html1 = archive1.replay_url().data.decode()
-            html2 = archive2.replay_url().data.decode()
-        except UnicodeDecodeError:
-            html1 = archive1.replay_url().data.decode('latin-1')
-            html2 = archive2.replay_url().data.decode('latin-1')
+    # TODO: this is pretty nuts:
+    ra = compare_obj.archive1.resources.get(submitted_url=True)
+    rb = compare_obj.archive2.resources.get(submitted_url=True)
+    # TODO: handle case when not created yet
 
-        html1 = rewrite_html(html1, archive1.get_warc_dir())
-        html2 = rewrite_html(html2, archive2.get_warc_dir())
-        # ignore guids in html
-        # diff_settings.EXCLUDE_STRINGS_A.append(str(old_guid))
-        # diff_settings.EXCLUDE_STRINGS_A.append(str(old_guid))
-        # diff_settings.EXCLUDE_STRINGS_B.append(str(new_guid))
+    rc = ResourceCompare.objects.get(resource1=ra, resource2=rb)
+    if not rc.html_added:
+        # do synchronously this time
+        create_html_diffs(compare_id, rc.id)
+        rc.refresh_from_db()
 
-        # add own style string
-        # diff_settings.STYLE_STR = settings.DIFF_STYLE_STR
+    html_deleted = rc.html_deleted
+    html_added = rc.html_added
+    # TODO: write temp named files for html highlighting
 
-        diffed = diff.HTMLDiffer(html1, html2)
-        write_to_static(diffed.deleted_diff, 'deleted.html', compare_id=compare_id)
-        write_to_static(diffed.inserted_diff, 'inserted.html', compare_id=compare_id)
-        write_to_static(diffed.combined_diff, 'combined.html', compare_id=compare_id)
+    total_count, unchanged_count, missing_count, added_count, changed_count = count_resources(compare_id)
+    resources = compare_obj.resource_compares.all()
 
-    # # TODO: change all '/' in url to '_' to save
-    total_count, unchanged_count, missing_count, added_count, changed_count = compare_obj.count_resources()
-    resources = list(compare_obj.archive1.resources.all()) + list(compare_obj.archive2.resources.all())
+    status_translation = {
+        'm': 'missing',
+        'a': 'added',
+        'c': 'changed',
+        'u': 'unchanged',
+        'p': 'pending',
+    }
+    resource_deets = list()
+
+    def flatten_info(resource, change):
+        r = dict()
+        r['content_type'] = resource.content_type
+        r['url'] = resource.url
+        r['change'] = change
+        r['status'] = status_translation[resource.status]
+        return r
+
+    for rc in resources:
+        if rc.resource1:
+            resource_deets.append(flatten_info(rc.resource1, rc.change))
+        if rc.resource2:
+            resource_deets.append(flatten_info(rc.resource2, rc.change))
+
+    specific_url = request.GET.get('q', None)
+    request1 = compare_obj.archive1.get_record_or_local_url(url=specific_url)
+    request2 = compare_obj.archive2.get_record_or_local_url(url=specific_url)
 
     context = {
         'compare_id': compare_id,
-        'request1': archive1.get_record_or_local_url(),
-        'request2': archive2.get_record_or_local_url(),
+        'request1': request1,
+        'request2': request2,
         'this_page': 'compare',
         "timestamp1": compare_obj.archive1.get_friendly_timestamp(),
         "timestamp2": compare_obj.archive2.get_friendly_timestamp(),
@@ -127,8 +155,7 @@ def compare(request, compare_id):
         # 'link_url': settings.HOST + '/' + archive1.guid,
         # 'protocol': protocol,
         "submitted_url": compare_obj.archive1.submitted_url,
-        'resources': resources,
-        'resources_choices': dict(resources[0].STATUS_CHOICES),
+        'resources': resource_deets,
         'resource_count': {
             'total': total_count[1],
             'unchanged': unchanged_count,
@@ -136,6 +163,8 @@ def compare(request, compare_id):
             'added': added_count,
             'changed': changed_count,
         },
+        'html_deleted': '/media/%s' % html_deleted.name,
+        'html_added': '/media/%s' % html_added.name,
     }
 
     return render(request, 'compare.html', context)

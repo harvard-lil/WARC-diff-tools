@@ -1,5 +1,4 @@
 import os
-import json
 from datetime import datetime
 from werkzeug.test import Client
 from werkzeug.wrappers import BaseResponse
@@ -9,19 +8,23 @@ from warcio.archiveiterator import ArchiveIterator
 from django.db import models
 from django.conf import settings
 
+from compare import utils
+
 
 class Compare(models.Model):
     id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     archive1 = models.ForeignKey('Archive', related_name='compare_archive1', null=True)
     archive2 = models.ForeignKey('Archive', related_name='compare_archive2', null=True)
+    resource_compares = models.ManyToManyField('ResourceCompare')
+    # TODO: figure out if completed is actually useful
+    # used to note that expanding archive + parsing records is completed
+
     completed = models.BooleanField(default=False)
 
     def __str__(self):
         return 'Compare %s + %s' % (self.archive1.id, self.archive2.id)
 
     def count_resources(self):
-        if not self.completed:
-            self.sort_resources()
         old_total = self.archive1.resources.count()
         new_total = self.archive2.resources.count()
         total = (old_total, new_total)
@@ -32,48 +35,6 @@ class Compare(models.Model):
         # arbitrarily choosing archive2, nums should be the same
         changed = self.archive2.resources.filter(status='c').count()
         return total, unchanged, missing, added, changed
-
-    def sort_resources(self):
-        if not self.completed:
-            resources1 = self.archive1.resources.all()
-            resources1_urls = resources1.values_list('url', flat=True)
-            resources2 = self.archive2.resources.all()
-            resources2_urls = resources2.values_list('url', flat=True)
-            # for resource in resources:
-            for resource in resources1:
-                if resource.url not in resources2_urls:
-                    # resource is missing
-                    resource.status = 'm'
-                else:
-                    # TODO: figure out what to do if there are two
-                    # or more of the same url
-                    resource2 = resources2.filter(url=resource.url)[0]
-                    if resource2.hash == resource.hash:
-                        resource2.status = 'u'
-                        resource2.save()
-                        resource.hash = 'u'
-                    else:
-                        # TODO: kick off process here that compares
-                        # in depth, creates resourcecompare obj
-                        resource2.status = 'c'
-                        resource2.save()
-                        resource.status = 'c'
-                resource.save()
-            # get all the remaining resources from archive2
-            # that have the status of pending
-            # at this point they should all be newly added
-            # set status to 'a' for added
-            for resource in resources2.filter(status='p'):
-                if resource.url not in resources1_urls:
-                    # resource has been added, wasn't present before
-                    resource.status = 'a'
-                    resource.save()
-            self.completed = True
-            self.save()
-        else:
-            print('comparing is finished')
-            return
-
 
 class Archive(models.Model):
     # file name ending with warc.gz
@@ -87,11 +48,26 @@ class Archive(models.Model):
     def __str__(self):
         return self.submitted_url
 
+    def save(self, *args, **kwargs):
+        super(Archive, self).save(*args, **kwargs)
+
+    def reset(self):
+        """
+        delete all resources to make way for new comparison
+        """
+        self.resources.all().delete()
+        self.completed = False
+        self.save()
+
     def get_warc_dir(self):
         return settings.ARCHIVES_DIR_STRING + str(self.id)
 
-    def get_recording_url(self):
-        return settings.ARCHIVES_ROUTE + '/' + self.get_warc_dir() + '/' + 'record' + '/' + self.timestamp + "/" + self.submitted_url
+    def get_recording_url(self, url=None):
+        base = settings.ARCHIVES_ROUTE + '/' + self.get_warc_dir() + '/' + 'record' + '/' + self.timestamp
+        if not url:
+            return base + '/' + self.submitted_url
+        else:
+            raise NotImplemented('should return recording url then redirect to url')
 
     def get_full_collection_path(self):
         tmp_path = os.path.join(settings.COLLECTIONS_DIR,  self.get_warc_dir())
@@ -111,14 +87,24 @@ class Archive(models.Model):
 
         return full_archive_parent_path + "/" + self.warc_name
 
-    def get_local_url(self):
-        return settings.ARCHIVES_ROUTE + '/' + self.get_warc_dir() + '/' + self.timestamp + '/' + self.submitted_url
+    def get_local_url(self, url=None):
+        base = settings.ARCHIVES_ROUTE + '/' + self.get_warc_dir() + '/' + self.timestamp
+        if not url:
+            return base + '/' + self.submitted_url
+        else:
+            # TODO: figure out what to do with multiple urls
+            if self.resources.filter(url=url):
+                return base + '/' + url
+            else:
+                return 'warcdiff-404.html'
 
     def get_full_local_url(self):
         return settings.BASE_URL + self.get_local_url()
 
-    def get_replay_url(self):
-        return '/' + self.get_warc_dir() + '/' + self.timestamp + '/' + self.submitted_url
+    def get_replay_url(self, url):
+        url = url if url else self.submitted_url
+        base_url = '/' + self.get_warc_dir() + '/' + self.timestamp
+        return base_url + '/' + url
 
     def replay_url(self, url=None):
         application = FrontEndApp(
@@ -128,10 +114,7 @@ class Archive(models.Model):
                 'framed_replay': False})
 
         client = Client(application, BaseResponse)
-        if url:
-            return client.get(url, follow_redirects=True)
-        else:
-            return client.get(self.get_replay_url(), follow_redirects=True)
+        return client.get(self.get_replay_url(url=url), follow_redirects=True)
 
     def create_collections_dir(self):
         collection_path = self.get_full_collection_path()
@@ -144,15 +127,24 @@ class Archive(models.Model):
         except FileNotFoundError:
             return False
 
-    def get_record_or_local_url(self):
+    def get_record_or_local_url(self, url=None):
         if self.warc_exists():
-            return self.get_local_url()
+            return self.get_local_url(url=url)
         else:
-            return self.get_recording_url()
+            return self.get_recording_url(url=url)
 
     def get_friendly_timestamp(self):
         d = datetime.strptime(self.timestamp, "%Y%m%d")
         return str(d.date())
+
+    def get_replayed_rewritten_resource_response(self, url):
+        # TODO: figure out what to do if two matching urls present
+        try:
+            data = self.replay_url(url=url).data.decode()
+        except UnicodeDecodeError:
+            data = self.replay_url(url=url).data.decode('latin-1')
+        # TODO: rewrite response here
+        return data
 
     def expand_warc_create_resources(self):
         """
@@ -160,12 +152,15 @@ class Archive(models.Model):
         organized by content type
         Each response obj consists of compressed payload and SHA1
         """
+        if self.completed:
+            return
         with open(self.get_full_warc_path(), 'rb') as stream:
             for record in ArchiveIterator(stream):
                 if record.rec_type != 'response':
                     continue
 
                 url = record.rec_headers.get_header('WARC-Target-URI')
+                print('saving url', url)
                 headers = record.http_headers
                 try:
                     # content_type = format_content_type(headers['Content-Type'])
@@ -182,28 +177,34 @@ class Archive(models.Model):
                         print("something went wrong", url)
                         print(content_type)
 
+                # TODO: figure out what to do with headers
+                res = Resource.objects.create(
+                    url=url,
+                    content_type=content_type,
+                    payload=payload,
+                    headers=str(record.rec_headers),
+                    hash=record.rec_headers.get('warc-payload-digest')
+                )
+                self.resources.add(res)
 
-
-                # TODO: figure out what to do with headersw
-                if not self.completed:
-                    res = Resource.objects.create(
-                        url=url,
-                        content_type=content_type,
-                        payload=payload,
-                        hash=record.rec_headers.get('warc-payload-digest')
-                    )
-                    self.resources.add(res)
-                    self.save()
-
-            if not self.completed:
-                self.completed = True
-                self.save()
-                self.refresh_from_db(fields=['completed', 'resources'])
-
-
+        # treat submitted_url as special because there might be redirects
+        # TODO: is this the right place for it? should it be done?
+        response = self.replay_url(self.submitted_url)
+        payload = utils.decode_data(response.data)
+        res = Resource.objects.create(
+            url=self.submitted_url,
+            content_type=response.headers.get('content-type'),
+            payload=payload,
+            headers=str(response.headers),
+            submitted_url=True,
+        )
+        self.resources.add(res)
+        self.completed = True
+        self.save()
 
 
 class Resource(models.Model):
+    # TODO: maybe remove these, not needed
     STATUS_CHOICES = (
         ('m', 'missing'),
         ('a', 'added'),
@@ -217,20 +218,23 @@ class Resource(models.Model):
     payload = models.TextField()
     hash = models.CharField(max_length=1000)
     headers = models.TextField()
+    submitted_url = models.BooleanField(default=False)
 
     def __str__(self):
         return self.url
 
 
+def compare_file_dir_path(instance, filename):
+    return "{0}/{1}".format(instance.id, filename)
+
+
 class ResourceCompare(models.Model):
-    resource1 = models.ForeignKey('Resource', related_name='resource1',  null=True)
+    resource1 = models.ForeignKey('Resource', related_name='resource1', null=True)
     resource2 = models.ForeignKey('Resource', related_name='resource2', null=True)
-    minhash = models.FloatField()
-    simhash = models.FloatField()
-    sequence_match = models.FloatField()
-    html_deleted = models.TextField()
-    html_added = models.TextField()
-    html_combined = models.TextField()
+    change = models.FloatField(null=True)
+    html_deleted = models.FileField(upload_to=compare_file_dir_path, null=True)
+    html_added = models.FileField(upload_to=compare_file_dir_path, null=True)
+    html_combined = models.FileField(upload_to=compare_file_dir_path, null=True)
 
     def __str__(self):
         return 'Compare %s + %s' % (self.resource1.id, self.resource2.id)
