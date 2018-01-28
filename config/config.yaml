@@ -17,7 +17,6 @@ collections:
   ia: memento+https://web.archive.org/web/
 
 collections_root: services/django/generated_assets/collections
-#collections_root: collections
 archive_paths: archive
 index_paths: indexes
 

@@ -27,8 +27,8 @@
       </div>
     {% elif this_page == 'compare' %}
       <div style="display: block;" class="capture-wrapper">
-        <iframe class="archive-display" id="left_frame" src="{{ request1 }}#_diff_deleted_{{ compare_id }}" ></iframe>
-        <iframe class="archive-display" id="right_frame" src="{{ request2 }}#_diff_inserted_{{ compare_id }}" ></iframe>
+        <iframe class="archive-display" id="left_frame" src="{{ request1 }}#_diff_deleted_{{ html_deleted }}" ></iframe>
+        <iframe class="archive-display" id="right_frame" src="{{ request2 }}#_diff_added_{{ html_added }}" ></iframe>
       </div>
     {% endif %}
     </body>
@@ -37,49 +37,19 @@
 {% block scripts %}
 
   <script>
+
     var resource_count = {
         total: parseInt("{{resource_count.total}}"),
         unchanged: parseInt("{{resource_count.unchanged}}"),
         missing: parseInt("{{resource_count.missing}}"),
         added: parseInt("{{resource_count.added}}"),
-        modified: parseInt("{{resource_count.modified}}")
+        changed: parseInt("{{resource_count.changed}}")
     };
   </script>
 
   <script src="https://code.jquery.com/jquery-3.2.1.js" integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
 			  crossorigin="anonymous"></script>
   <script src="{% static 'js/compare-warcs.js' %}"></script>
-
-  <script>
-  var showHighlightsButton = $("#show-highlights-btn.btn");
-
-  function init() {
-    var clicked = false;
-    if (showHighlightsButton) {
-      showHighlightsButton.click(function(evt){
-        clicked = !clicked;
-        showHighlights(clicked, evt.target.id);
-      });
-    }
-  }
-
-  function showHighlights(clicked) {
-    console.log("clicked!", clicked);
-
-    //var compare_dir = location.hash.split(/_diff_\w+_/)[1].split("_");
-    if (clicked) {
-          document.getElementById('left_frame').contentWindow.showArchiveHighlights('deleted');
-          document.getElementById('right_frame').contentWindow.showArchiveHighlights('inserted');
-        } else {
-          document.getElementById('left_frame').contentWindow.showArchiveHighlights('deleted');
-          document.getElementById('right_frame').contentWindow.showArchiveHighlights('inserted');
-        }
-  }
-
-  init();
-
-  </script>
-
 
 
 {% endblock %}

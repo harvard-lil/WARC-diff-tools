@@ -31,6 +31,9 @@ header.header-dark {
   color: white;
 }
 
+header .primary-segment {
+}
+
 header .secondary-segment {
   background: white;
   color: #2D76EE;
@@ -139,12 +142,12 @@ header > .row > .col-primary {
 }
 
 
-.btn-circle.color-modified {
+.btn-circle.color-changed {
   color: #F7FF6F;
   border-color: #F7FF6F;
 }
 
-.btn-circle.color-modified:hover {
+.btn-circle.color-changed:hover {
   background: #F7FF6F;
   color: #222;
 }
@@ -165,12 +168,26 @@ td {
   border: 1px solid rgba(100, 100, 100, 0.07);
 }
 
+.comparison-container {
+  max-height: 300px;
+  overflow-y: scroll;
+}
+
 .comparison-table {
   width: 100%;
   border-collapse: collapse;
   background: white;
   display: none;
   position: absolute;
+  z-index: 1;
+}
+
+.comparison-table.color-white a {
+    color: #222;
+}
+
+.comparison-table tbody {
+  background: white;
 }
 
 .comparison-table tr {
@@ -185,7 +202,7 @@ td {
   padding: 10px 20px;
 }
 
-.comparison-table td.resource-modified {
+.comparison-table td.resource-changed {
   background: #F7FF6F;
 }
 

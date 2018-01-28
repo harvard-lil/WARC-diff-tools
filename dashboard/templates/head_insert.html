@@ -32,20 +32,11 @@
     console.warn("_wb_wombat missing!");
   }
 {% endif %}
-
-document.addEventListener("DOMContentLoaded",
-    function() {
-      if (location.hash.includes("_diff_")) {
-        var compare_dir = location.hash.split(/_diff_\w+_/)[1].split("_");
-        var new_location = "{{ host_prefix }}/{{ static_path }}/" + compare_dir + "/";
-        if (location.hash.includes("_deleted_")) {
-          location.href = new_location + "deleted.html";
-        } else {
-          location.href = new_location + "inserted.html";
-        }
-      }
-    }
-);
+if (location.hash.includes("_diff_")) {
+  var diffed_html = location.hash.split(/_diff_\w+_/)[1];
+  var new_location = "{{ host_prefix }}" + diffed_html;
+  location.href = new_location;
+}
 </script>
 
 

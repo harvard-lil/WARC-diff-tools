@@ -26,6 +26,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # 'config',
+    'django_celery_results',
     'compare',
     'dashboard',
 ]
@@ -119,6 +121,7 @@ SERVICES_DIR = os.path.abspath(os.path.join(PROJECT_ROOT, 'services'))
 # user generated warc files
 MEDIA_ROOT = os.path.join(SERVICES_DIR, 'django/generated_assets/')
 COLLECTIONS_DIR = os.path.join(MEDIA_ROOT, 'collections')
+MEDIA_URL = '/media/'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static-collected')                # where to store collected static files
@@ -140,5 +143,14 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]
 
+RUN_ASYNC = True
+
 # gzip
 # STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
+CELERY_BROKER_URL = 'redis://'
+CELERY_REDIS_CONNECT_RETRY = True
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_BROKER_TRANSPORT_OPTIONS = {'socket_timeout': 10}
+CELERY_ALWAYS_EAGER = True

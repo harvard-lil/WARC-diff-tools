@@ -6,3 +6,6 @@ collections/*
 !collections/README.md
 
 settings.py
+generated_assets
+
+*.todo

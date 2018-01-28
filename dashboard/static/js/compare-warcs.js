@@ -2,8 +2,6 @@ var resizeTimeout, wrapper;
 
 var detailsButtons = $(".btn-resource-details");
 
-var detailsTray = document.getElementById("collapse-details");
-
 function init () {
   adjustTopMargin();
   var clicked = false;
@@ -28,18 +26,18 @@ function init () {
 function handleShowDetails (open, btn_id) {
   var resource_type = btn_id.split("resource-count-")[1];
   if (open) {
-    $(".comparison-table").show();
-    if (resource_type === "modified") {
-      $(".resource-modified").show();
+    $(".comparison-table").css('display', 'block');
+    if (resource_type === "changed") {
+      $(".resource-changed").show();
       $(".resource-added").hide();
       $(".resource-missing").hide();
     } else if (resource_type === "added") {
       $(".resource-added").show();
-      $(".resource-modified").hide();
+      $(".resource-changed").hide();
       $(".resource-missing").hide();
     } else if (resource_type === "missing") {
       $(".resource-missing").show();
-      $(".resource-modified").hide();
+      $(".resource-changed").hide();
       $(".resource-added").hide();
     } else if (resource_type === "total") {
       $(".resource-row").show();
@@ -48,7 +46,6 @@ function handleShowDetails (open, btn_id) {
     $(".resource-row").hide();
     $(".comparison-table").hide();
   }
-  detailsTray.style.display = open ? "block" : "none";
 }
 
 function adjustTopMargin () {
