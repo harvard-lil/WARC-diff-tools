@@ -13,8 +13,8 @@ from compare import utils
 
 class Compare(models.Model):
     id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
-    archive1 = models.ForeignKey('Archive', related_name='compare_archive1', null=True)
-    archive2 = models.ForeignKey('Archive', related_name='compare_archive2', null=True)
+    archive1 = models.ForeignKey('Archive', related_name='compare_archive1', null=True, on_delete=models.CASCADE)
+    archive2 = models.ForeignKey('Archive', related_name='compare_archive2', null=True, on_delete=models.CASCADE)
     resource_compares = models.ManyToManyField('ResourceCompare')
     # TODO: figure out if completed is actually useful
     # used to note that expanding archive + parsing records is completed
@@ -229,8 +229,8 @@ def compare_file_dir_path(instance, filename):
 
 
 class ResourceCompare(models.Model):
-    resource1 = models.ForeignKey('Resource', related_name='resource1', null=True)
-    resource2 = models.ForeignKey('Resource', related_name='resource2', null=True)
+    resource1 = models.ForeignKey('Resource', related_name='resource1', null=True, on_delete=models.CASCADE)
+    resource2 = models.ForeignKey('Resource', related_name='resource2', null=True, on_delete=models.CASCADE)
     change = models.FloatField(null=True)
     html_deleted = models.FileField(upload_to=compare_file_dir_path, null=True)
     html_added = models.FileField(upload_to=compare_file_dir_path, null=True)
