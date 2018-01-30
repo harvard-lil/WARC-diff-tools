@@ -7,7 +7,9 @@
       <form action="/compare/{{ compare_id }}" method="post">
         {% csrf_token %}
         <input type="hidden" name="compare_id" value="{{ compare_id }}">
-        <input class="btn dark-btn" type="submit" value="compare">
+        <button class="btn dark-btn" id="go-to-compare" type="submit" disabled>
+          Compare
+        </button>
       </form>
     </div>
     <!--<div class="col col-sm-4 _main col-primary">

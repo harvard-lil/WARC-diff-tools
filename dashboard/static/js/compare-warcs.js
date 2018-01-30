@@ -1,6 +1,27 @@
 var resizeTimeout, wrapper;
-
 var detailsButtons = $(".btn-resource-details");
+
+// using jQuery
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
 
 function init () {
   adjustTopMargin();
@@ -21,7 +42,28 @@ function init () {
       clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(adjustTopMargin, 200);
   };
+  // callBackgroundTask();
 }
+
+function callBackgroundTask() {
+  console.log('calling background task');
+  var csrftoken = getCookie('csrftoken');
+  var url = 'background/' + window.compare_id;
+
+  $.ajax({
+      beforeSend: function(xhr, settings) {
+          if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+              xhr.setRequestHeader("X-CSRFToken", csrftoken);
+          }
+      },
+      url: url,
+      method: "POST",
+      csrfmiddlewaretoken : csrftoken,
+      }).done(function () {
+    console.log('done!')
+  })
+}
+
 
 function handleShowDetails (open, btn_id) {
   var resource_type = btn_id.split("resource-count-")[1];
@@ -57,3 +99,4 @@ function adjustTopMargin () {
 }
 
 init();
+

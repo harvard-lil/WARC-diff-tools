@@ -50,6 +50,13 @@ def create(request):
     return redirect('/view/%s' % compare_obj.id)
 
 
+def background_compare(request, compare_id):
+    comp = Compare.objects.get(id=compare_id)
+    call_task(initial_compare.s(comp.id))
+
+    return HttpResponse('ok', status=200)
+
+
 def view_pair(request, compare_id):
     comp = Compare.objects.get(id=compare_id)
     archive1 = comp.archive1
