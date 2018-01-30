@@ -5,5 +5,8 @@ python:
 
 install: "pip install -r requirements.txt"
 
+before_script:
+  - cp config/settings_travis.py config/settings.py
+
 script:
   - pytest
