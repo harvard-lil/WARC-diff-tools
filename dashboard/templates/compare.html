@@ -6,6 +6,15 @@
       <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
       <link rel="stylesheet" href="{% static 'css/general.css' %}">
       <link rel="stylesheet" href="{% static 'css/dashboard-styles.css' %}">
+        <script src="https://code.jquery.com/jquery-3.2.1.js" integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
+			  crossorigin="anonymous"></script>
+      <script src="{% static 'js/compare-warcs.js' %}"></script>
+
+      <!-- websockets -->
+      <script src="{% static 'js/ws.js' %}"></script>
+
+
+
       <title>
         Archive comparison
       </title>
@@ -37,6 +46,7 @@
 {% block scripts %}
 
   <script>
+    var compare_id = "{{ compare_id }}";
 
     var resource_count = {
         total: parseInt("{{resource_count.total}}"),
@@ -46,10 +56,6 @@
         changed: parseInt("{{resource_count.changed}}")
     };
   </script>
-
-  <script src="https://code.jquery.com/jquery-3.2.1.js" integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
-			  crossorigin="anonymous"></script>
-  <script src="{% static 'js/compare-warcs.js' %}"></script>
 
 
 {% endblock %}

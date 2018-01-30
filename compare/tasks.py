@@ -1,4 +1,6 @@
-from celery import shared_task
+import json
+import redis
+from celery import shared_task, Task
 
 from django.core.files.base import ContentFile
 
@@ -6,8 +8,29 @@ from compare.utils import get_html_diff, rewrite_html, calculate_similarity_pair
 from compare.models import *
 from compare.warc_compare import *
 
-from dashboard.utils import write_to_static
+from dashboard.utils import write_to_static, serialize_model
 
+r = redis.StrictRedis(host='localhost', port=6379, db=0)
+
+class CallbackTask(Task):
+    def on_success(self, val, task_id, args, kwargs):
+        response = json.dumps({
+            "data": val,
+            "args": args,
+            "kwargs": kwargs
+        })
+        r.publish('websocket', response)
+        print("SUCCESS!", response)
+        pass
+
+    def on_failure(self, exc, task_id, args, kwargs, einfo):
+        response = json.dumps({
+            "error": exc,
+            "args": args,
+            "kwargs": kwargs
+        })
+        r.publish('websocket', response)
+        pass
 
 def call_task(fn, *args, **kwargs):
     """
@@ -20,7 +43,7 @@ def call_task(fn, *args, **kwargs):
     return res
 
 
-@shared_task
+@shared_task(base=CallbackTask)
 def count_resources(compare_id):
     comp = Compare.objects.get(id=compare_id)
     sort_resources(comp.id)
@@ -28,40 +51,44 @@ def count_resources(compare_id):
     return total, unchanged, missing, added, changed
 
 
-
-@shared_task
-def diff_html(compare_id, resource_tuple, html_tuple):
-    diffed = diff.HTMLDiffer(html1, html2)
-    write_to_static(diffed.deleted_diff, 'deleted.html', compare_id=compare_id)
-    write_to_static(diffed.inserted_diff, 'inserted.html', compare_id=compare_id)
-    write_to_static(diffed.combined_diff, 'combined.html', compare_id=compare_id)
-
-# @shared_task
-# def expand_archive(archive_id):
-
-
-@shared_task
+@shared_task(base=CallbackTask)
 def expand_warc(archive_id):
     archive = Archive.objects.get(id=archive_id)
     archive.expand_warc_create_resources()
+    return {
+        "task": "expand_warc",
+        "archive": archive_id,
+    }
 
 
-@shared_task
+@shared_task(base=CallbackTask)
 def initial_compare(compare_id):
-    # compare just the submitted_url resources (the most-likely html response user will see on request of url)
-    # this allows the site to replay in full while showing highlights
+    """
+    compare just the submitted_url resources (the most-likely html response user will see on request of url)
+    this allows the site to replay in full while showing highlights
+    """
     compare_obj = Compare.objects.get(id=compare_id)
     archive1 = compare_obj.archive1
     archive2 = compare_obj.archive2
     archive1.expand_warc_create_resources()
     archive2.expand_warc_create_resources()
+    resource1 = archive1.resources.get(submitted_url=True)
+    resource2 = archive1.resources.get(submitted_url=True)
+    rc, created = ResourceCompare.objects.get_or_create(resource1=resource1, resource2=resource2)
+    print("created main resource compare:", created)
+    create_html_diffs(compare_id, rc.id)
 
+    return {
+        "task": "initial_compare",
+        "status": "success",
+    }
 
-@shared_task
+@shared_task(base=CallbackTask)
 def create_html_diffs(compare_id, resource_compare_id):
     comp = Compare.objects.get(id=compare_id)
+
     rc = ResourceCompare.objects.get(id=resource_compare_id)
-    if not rc.html_added:
+    if not rc.html_added or not rc.deleted:
         payload1 = rewrite_html(rc.resource1.payload, comp.archive1.get_warc_dir())
         payload2 = rewrite_html(rc.resource2.payload, comp.archive2.get_warc_dir())
         deleted, added, combined = get_html_diff(payload1, payload2)
@@ -78,8 +105,13 @@ def create_html_diffs(compare_id, resource_compare_id):
     else:
         print("html diffs already written")
 
+    if not comp.submitted_url_compare_ready:
+        if comp.archive1.submitted_url == rc.resource1.submitted_url and comp.archive2.submitted_url == rc.resource2.submitted_url:
+            comp.submitted_url_compare_ready = True
+            comp.save()
 
-@shared_task
+
+@shared_task(base=CallbackTask)
 def sort_resources(compare_id):
     comp = Compare.objects.get(id=compare_id)
     if not comp.completed:
@@ -116,7 +148,7 @@ def sort_resources(compare_id):
                     resource2.save()
                     resource.status = 'c'
                     # since resource has changed, kick off comparison
-                    call_task(compare_resource.s(comp.id, rc.id))
+                    call_task(compare_resource.s(comp.id, resource.id, resource2.id))
 
             resource.save()
             # TODO: potential for collision here, investigate
@@ -145,9 +177,9 @@ def sort_resources(compare_id):
         return
 
 
-@shared_task
-def compare_resource(compare_id, resource_compare_id):
-    rc = ResourceCompare.objects.get(id=resource_compare_id)
+@shared_task(base=CallbackTask)
+def compare_resource(compare_id, resource1_id, resource2_id, submitted_url=False):
+    rc, created = ResourceCompare.objects.get_or_create(resource1=resource1_id, resource2=resource2_id)
     if not rc.resource1.payload or not rc.resource2.payload:
         print("impossible to compare", rc.resource1.id, rc.resource2.id)
         return
@@ -156,4 +188,9 @@ def compare_resource(compare_id, resource_compare_id):
     rc.save()
     comp = Compare.objects.get(id=compare_id)
     comp.resource_compares.add(rc)
-    print('calculated change:', rc.id, rc.change )
+    return {
+        "compare_id": compare_id,
+        "task": "compare_resource",
+        "submitted_url": submitted_url,
+        "completed": True,
+    }
