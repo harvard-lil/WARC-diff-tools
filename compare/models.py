@@ -212,7 +212,7 @@ class Resource(models.Model):
         ('u', 'unchanged'),
         ('p', 'pending'),
     )
-    url = models.URLField(max_length=2000)
+    url = models.URLField(max_length=3000)
     content_type = models.CharField(max_length=1000)
     status = models.CharField(choices=STATUS_CHOICES, default='p', max_length=1)
     payload = models.TextField()
