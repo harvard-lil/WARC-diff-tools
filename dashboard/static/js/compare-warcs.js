@@ -1,5 +1,4 @@
 var resizeTimeout, wrapper;
-var detailsButtons = $(".btn-resource-details");
 
 // using jQuery
 function getCookie(name) {
@@ -25,24 +24,11 @@ function csrfSafeMethod(method) {
 
 function init () {
   adjustTopMargin();
-  var clicked = false;
-  if (detailsButtons) {
-    $(".resource-row").hide();
-    for (var i=0; i < detailsButtons.length; i++) {
-      var btn = detailsButtons[i];
-      $("#" + btn.id).click(function(evt){
-        clicked = !clicked;
-        handleShowDetails(clicked, evt.target.id);
-      });
-    }
-  }
-
   window.onresize = function(){
     if (resizeTimeout)
       clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(adjustTopMargin, 200);
   };
-  // callBackgroundTask();
 }
 
 function callBackgroundTask() {
@@ -97,9 +83,20 @@ function adjustTopMargin () {
   wrapper.style.marginTop = "0px";
 }
 
-init();
-
 document.addEventListener("DOMContentLoaded",function(){
+  init();
+  var detailsButtons = $(".btn-resource-details");
+  var clicked = false;
+  if (detailsButtons) {
+    $(".resource-row").hide();
+    for (var i=0; i < detailsButtons.length; i++) {
+      var btn = detailsButtons[i];
+      $("#" + btn.id).click(function(evt){
+        clicked = !clicked;
+        handleShowDetails(clicked, evt.target.id);
+      });
+    }
+  }
   setTimeout(function(){
     callBackgroundTask();
   }, 2000);

@@ -49,7 +49,7 @@
                   </a>
                 </td>
                 {% if r.change %}
-                  <td>{{ r.change}}</td>
+                  <td class="resource-{{ r.status }}">{{ r.change}}</td>
                 {% else %}
                   <td class="resource-{{ r.status }}">{{ r.status }}</td>
                 {% endif %}
