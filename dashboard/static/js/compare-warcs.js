@@ -46,7 +46,6 @@ function init () {
 }
 
 function callBackgroundTask() {
-  console.log('calling background task');
   var csrftoken = getCookie('csrftoken');
   var url = 'background/' + window.compare_id;
 
@@ -58,9 +57,9 @@ function callBackgroundTask() {
       },
       url: url,
       method: "POST",
-      csrfmiddlewaretoken : csrftoken,
+      csrfmiddlewaretoken : csrftoken
       }).done(function () {
-    console.log('done!')
+    console.log('done!');
   })
 }
 

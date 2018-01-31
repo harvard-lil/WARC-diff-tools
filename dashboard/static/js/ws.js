@@ -38,9 +38,3 @@ var formatWSMessage = function(reason, message, data) {
   })
 };
 
-function checkCompareAvailability() {
-  console.log('getting compare id?', compare_id);
-  callBackgroundTask()
-  s.send(formatWSMessage("check_compare_status", "", compare_id));
-}
-
