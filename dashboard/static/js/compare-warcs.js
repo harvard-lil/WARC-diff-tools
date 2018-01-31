@@ -100,3 +100,8 @@ function adjustTopMargin () {
 
 init();
 
+document.addEventListener("DOMContentLoaded",function(){
+  setTimeout(function(){
+    callBackgroundTask();
+  }, 2000);
+});
