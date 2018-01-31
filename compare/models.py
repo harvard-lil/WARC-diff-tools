@@ -37,6 +37,7 @@ class Compare(models.Model):
         changed = self.archive2.resources.filter(status='c').count()
         return total, unchanged, missing, added, changed
 
+
 class Archive(models.Model):
     # file name ending with warc.gz
     warc_name = models.TextField()
@@ -49,8 +50,9 @@ class Archive(models.Model):
     def __str__(self):
         return self.submitted_url
 
-    def save(self, *args, **kwargs):
-        super(Archive, self).save(*args, **kwargs)
+    def create(self, *args, **kwargs):
+        self.create_collections_dir()
+        super(Archive, self).create(*args, **kwargs)
 
     def reset(self):
         """
@@ -170,24 +172,26 @@ class Archive(models.Model):
                     # HACK: figure out a better solution for unknown content types
                     content_type = "unknown"
                 try:
-                    payload = record.content_stream().read().decode()
+                    payload = utils.decode_data(record.content_stream().read())
                 except UnicodeDecodeError as e:
                     if 'image' in content_type:
                         payload = ''
                     else:
-                        print("something went wrong", url)
+                        print("something went wrong", url, e)
                         print(content_type)
-
+                        payload = ''
                 # TODO: figure out what to do with headers
-                res = Resource.objects.create(
-                    url=url,
-                    content_type=content_type,
-                    payload=payload,
-                    headers=str(record.rec_headers),
-                    hash=record.rec_headers.get('warc-payload-digest')
-                )
-                self.resources.add(res)
-
+                try:
+                    res = Resource.objects.create(
+                        url=url,
+                        content_type=content_type,
+                        payload=payload,
+                        headers=str(record.rec_headers),
+                        hash=record.rec_headers.get('warc-payload-digest')
+                    )
+                    self.resources.add(res)
+                except Exception as e:
+                    print("expand_warc_create_resources exception", self.id, url, record, record.rec_headers, e)
         # treat submitted_url as special because there might be redirects
         # TODO: is this the right place for it? should it be done?
         response = self.replay_url(self.submitted_url)
