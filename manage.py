@@ -2,9 +2,7 @@
 import os
 import sys
 
-# TODO: check if uwsgi is running
-# if not, monkey patch
-# from gevent import monkey; monkey.patch_all()
+from gevent import monkey; monkey.patch_all()
 
 if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
