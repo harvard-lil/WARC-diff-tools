@@ -8,7 +8,8 @@ urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^create/', views.create, name='record'),
     url(r'compare/(?P<compare_id>\d+)', views.compare, name='compare'),
-    url(r'view/(?P<compare_id>\d+)', views.view_pair, name='view_pair')
+    url(r'view/(?P<compare_id>\d+)', views.view_pair, name='view_pair'),
+    url(r'background/(?P<compare_id>\d+)', views.background_compare, name='background_compare')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
