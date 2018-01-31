@@ -16,9 +16,10 @@ class Compare(models.Model):
     archive1 = models.ForeignKey('Archive', related_name='compare_archive1', null=True, on_delete=models.CASCADE)
     archive2 = models.ForeignKey('Archive', related_name='compare_archive2', null=True, on_delete=models.CASCADE)
     resource_compares = models.ManyToManyField('ResourceCompare')
+    # TODO:
+    submitted_url_compare_ready = models.BooleanField(default=False)
     # TODO: figure out if completed is actually useful
     # used to note that expanding archive + parsing records is completed
-
     completed = models.BooleanField(default=False)
 
     def __str__(self):
