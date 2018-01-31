@@ -28,18 +28,26 @@
         {% endif %}
       {% endblock %}
 
+    <div style="display: block;" class="capture-wrapper">
     {% if this_page == 'view_pair' %}
+        <div class="col-md-6">
+          <iframe class="archive-display" id="left_frame" src="{{ request1 }}" ></iframe>
+        </div>
+        <div class="col-md-6">
+          <iframe class="archive-display" id="right_frame" src="{{ request2 }}" ></iframe>
+        </div>
+    {% elif this_page == 'compare' %}
 
       <div style="display: block;" class="capture-wrapper">
-        <iframe class="archive-display" id="left_frame" src="{{ request1 }}" ></iframe>
-        <iframe class="archive-display" id="right_frame" src="{{ request2 }}" ></iframe>
-      </div>
-    {% elif this_page == 'compare' %}
-      <div style="display: block;" class="capture-wrapper">
-        <iframe class="archive-display" id="left_frame" src="{{ request1 }}#_diff_deleted_{{ html_deleted }}" ></iframe>
-        <iframe class="archive-display" id="right_frame" src="{{ request2 }}#_diff_added_{{ html_added }}" ></iframe>
+        <div class="col-md-6">
+          <iframe class="archive-display" id="left_frame" src="{{ request1 }}#_diff_deleted_{{ html_deleted }}" ></iframe>
+        </div>
+        <div class="col-md-6">
+          <iframe class="archive-display" id="right_frame" src="{{ request2 }}#_diff_added_{{ html_added }}" ></iframe>
+        </div>
       </div>
     {% endif %}
+    </div>
     </body>
 </html>
 
