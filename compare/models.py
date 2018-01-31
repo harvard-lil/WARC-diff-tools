@@ -235,6 +235,7 @@ class ResourceCompare(models.Model):
     html_deleted = models.FileField(upload_to=compare_file_dir_path, null=True)
     html_added = models.FileField(upload_to=compare_file_dir_path, null=True)
     html_combined = models.FileField(upload_to=compare_file_dir_path, null=True)
+    submitted_url = models.BooleanField(default=False)
 
     def __str__(self):
         return 'Compare %s + %s' % (self.resource1.id, self.resource2.id)
