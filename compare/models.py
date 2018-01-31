@@ -102,7 +102,7 @@ class Archive(models.Model):
     def get_full_local_url(self):
         return settings.BASE_URL + self.get_local_url()
 
-    def get_replay_url(self, url):
+    def get_replay_url(self, url=None):
         url = url if url else self.submitted_url
         base_url = '/' + self.get_warc_dir() + '/' + self.timestamp
         return base_url + '/' + url
