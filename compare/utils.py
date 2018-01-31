@@ -210,11 +210,12 @@ def get_payload(urlpath, expanded_warc):
     return find_resource_by_url(urlpath, expanded_warc)['payload'].decode()
 
 
+
 def rewrite_html(html_page, warc_dir):
     # TODO: build this out
-    tmp_html = re.sub("http://localhost/", "%s://%s%s/" % (settings.PROTOCOL, settings.BASE_URL, settings.ARCHIVES_ROUTE), html_page)
-    return re.sub(warc_dir, "archives/{0}".format(warc_dir), tmp_html)
+    tmp_html = re.sub("://localhost/", "://%s/" % settings.BASE_URL, html_page)
 
+    return re.sub(warc_dir, "archives/{0}".format(warc_dir), tmp_html)
 
 def format_content_type(content_type):
     """
@@ -224,11 +225,6 @@ def format_content_type(content_type):
     """
     rx = re.compile('\n|\t|\r')
     return rx.sub('', content_type).split(';')[0]
-
-#
-# def sequence_match(s1, s2):
-#     seq = difflib.SequenceMatcher(None, s1, s2)
-#     return seq.ratio() * 100
 
 
 def get_html_diff(payload1, payload2):
