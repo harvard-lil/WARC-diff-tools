@@ -57,7 +57,7 @@ python-hashes==0.1
 pytest==3.3.1
 pytest-django==3.1.2
 pytz==2017.3
--e git://github.com/anastasia/pywb@c5388487158ecb44733809fff3e5861852688183#egg=pywb
+pywb==2.0.0
 PyYAML==3.12
 redis==2.10.6
 requests==2.18.4
