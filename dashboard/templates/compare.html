@@ -1,26 +1,6 @@
-<html>
-    <head>
-      {% load static %}
-      <link rel="stylesheet" href="{% static 'css/normalize.css' %}">
-      <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
-      <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
-      <link rel="stylesheet" href="{% static 'css/general.css' %}">
-      <link rel="stylesheet" href="{% static 'css/dashboard-styles.css' %}">
-        <script src="https://code.jquery.com/jquery-3.2.1.js" integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
-			  crossorigin="anonymous"></script>
-      <script src="{% static 'js/compare-warcs.js' %}"></script>
-
-      <!-- websockets -->
-      <script src="{% static 'js/ws.js' %}"></script>
-
-
-
-      <title>
-        Archive comparison
-      </title>
-    </head>
-    <body>
-      {% block header %}
+{% extends "includes/base.html" %}
+{% block title %}Compare web archives{% endblock %}
+    {% block header %}
         {% if this_page == 'view_pair' %}
           {% include 'includes/header.html' %}
         {% else %}
@@ -31,25 +11,23 @@
     <div style="display: block;" class="capture-wrapper">
     {% if this_page == 'view_pair' %}
         <div class="col-md-6">
-          <iframe class="archive-display" id="left_frame" src="{{ request1 }}" ></iframe>
+          <iframe class="archive-display" id="left_frame" src="{{ request1 }}" sandbox></iframe>
         </div>
         <div class="col-md-6">
-          <iframe class="archive-display" id="right_frame" src="{{ request2 }}" ></iframe>
+          <iframe class="archive-display" id="right_frame" src="{{ request2 }}" sandbox></iframe>
         </div>
     {% elif this_page == 'compare' %}
 
       <div style="display: block;" class="capture-wrapper">
         <div class="col-md-6">
-          <iframe class="archive-display" id="left_frame" src="{{ request1 }}#_diff_deleted_{{ html_deleted }}" ></iframe>
+          <iframe class="archive-display" id="left_frame" src="{{ request1 }}#_diff_deleted_{{ html_deleted }}" sandbox></iframe>
         </div>
         <div class="col-md-6">
-          <iframe class="archive-display" id="right_frame" src="{{ request2 }}#_diff_added_{{ html_added }}" ></iframe>
+          <iframe class="archive-display" id="right_frame" src="{{ request2 }}#_diff_added_{{ html_added }}" sandbox></iframe>
         </div>
       </div>
     {% endif %}
     </div>
-    </body>
-</html>
 
 {% block scripts %}
 
