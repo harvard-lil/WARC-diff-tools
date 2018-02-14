@@ -1,13 +1,11 @@
-from werkzeug.test import Client
-from werkzeug.wrappers import BaseResponse
-from pywb.apps.frontendapp import FrontEndApp
-
+import requests
 from django.shortcuts import render, redirect
+from django.http import HttpResponse
 
 from dashboard.utils import *
 
 from compare.models import Compare, Archive, ResourceCompare
-from compare.tasks import expand_warc, call_task, create_html_diffs, count_resources, compare_resource
+from compare.tasks import call_task, create_html_diffs, count_resources, initial_compare
 
 
 def index(request):
@@ -24,24 +22,14 @@ def create(request):
     new_timestamp = format_date_for_memento(request.POST.get('new_date'))
     archives = []
 
-    archive_requested_urls = []
     for timestamp in (old_timestamp, new_timestamp):
         archive = Archive.objects.create(
             timestamp=timestamp,
             submitted_url=submitted_url)
-
         archive.save()
 
         # unique dir for pywb to record warcs
         archive.create_collections_dir()
-
-        # if warc does not exist yet, get record url to record new warc
-        # if it does, get warc url
-        archive_requested_urls.append(archive.get_record_or_local_url())
-
-        # expand warc in background for later use
-        call_task(expand_warc.s(archive.id))
-
         archives.append(archive)
 
     compare_obj = Compare.objects.create(archive1=archives[0], archive2=archives[1])
@@ -50,47 +38,49 @@ def create(request):
     return redirect('/view/%s' % compare_obj.id)
 
 
+def background_compare(request, compare_id):
+    """
+    starting comparing processes in the background
+    """
+    comp = Compare.objects.get(id=compare_id)
+    call_task(initial_compare.s(comp.id))
+    return HttpResponse('ok %s' % compare_id, status=200)
+
+
+def preload_archive(request, archive_url):
+    response = requests.get(settings.PROTOCOL + "://" + settings.BASE_URL + archive_url)
+    if not response.status_code != 200:
+        print("resp1 status_code:", response)
+        return render(request, '404.html')
+    else:
+        pass
+
+
 def view_pair(request, compare_id):
     comp = Compare.objects.get(id=compare_id)
     archive1 = comp.archive1
     archive2 = comp.archive2
-    # create initial comparison of submitted_url html for faster display
-    submitted_url_resource1 = archive1.resources.get(submitted_url=True)
-    submitted_url_resource2 = archive2.resources.get(submitted_url=True)
+    # kick off non-blocking initial comparison
+    request1 = archive1.get_record_or_local_url()
+    request2 = archive2.get_record_or_local_url()
+    # preload url, because we want to avoid pywb errors on the front end
+    if not archive1.warc_exists():
+        preload_archive(request, request1)
+    if not archive2.warc_exists():
+        preload_archive(request, request2)
 
-    rc, created = ResourceCompare.objects.get_or_create(
-        resource1=submitted_url_resource1,
-        resource2=submitted_url_resource2)
-    call_task(create_html_diffs.s(compare_id, rc.id))
-    call_task(count_resources.s(comp.id))
+    call_task(initial_compare.s(comp.id))
 
     context = {
         "this_page": "view_pair",
         "compare_id": compare_id,
-        "request1": archive1.get_record_or_local_url(),
-        "request2": archive2.get_record_or_local_url(),
+        "request1": request1,
+        "request2": request2,
         "timestamp1": archive1.get_friendly_timestamp(),
         "timestamp2": archive2.get_friendly_timestamp(),
         "submitted_url": archive1.submitted_url}
 
     return render(request, 'compare.html', context)
-
-
-def single_link(request):
-    # full_url = "http://localhost:8082/archives/20000110_example_com/20000110/http://example.com"
-
-    full_url = "/20000110_example_com/20000110/http://example.com"
-    application = FrontEndApp(
-                config_file='config/config.yaml',
-                custom_config={
-                    'debug': True,
-                    # 'port': '8080',
-                    'framed_replay': True})
-
-    # # Set up a werkzeug wsgi client.
-    client = Client(application, BaseResponse)
-    resp = client.get(full_url, follow_redirects=True)
-    return render(resp.response, "single_link.html")
 
 
 def compare(request, compare_id):
@@ -100,12 +90,13 @@ def compare(request, compare_id):
     compare_obj = Compare.objects.get(id=compare_id)
 
     # TODO: this is pretty nuts:
-    ra = compare_obj.archive1.resources.get(submitted_url=True)
-    rb = compare_obj.archive2.resources.get(submitted_url=True)
+    ra = compare_obj.archive1.resources.filter(submitted_url=True)[0]
+    rb = compare_obj.archive2.resources.filter(submitted_url=True)[0]
     # TODO: handle case when not created yet
 
-    rc = ResourceCompare.objects.get(resource1=ra, resource2=rb)
-    if not rc.html_added:
+    rc, created = ResourceCompare.objects.get_or_create(resource1=ra, resource2=rb)
+
+    if not rc.html_added or not rc.html_deleted:
         # do synchronously this time
         create_html_diffs(compare_id, rc.id)
         rc.refresh_from_db()

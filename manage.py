@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-from gevent import monkey; monkey.patch_all()
-
 import os
 import sys
+
+from gevent import monkey; monkey.patch_all()
 
 if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")

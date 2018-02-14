@@ -13,12 +13,13 @@ from compare import utils
 
 class Compare(models.Model):
     id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
-    archive1 = models.ForeignKey('Archive', related_name='compare_archive1', null=True)
-    archive2 = models.ForeignKey('Archive', related_name='compare_archive2', null=True)
+    archive1 = models.ForeignKey('Archive', related_name='compare_archive1', null=True, on_delete=models.CASCADE)
+    archive2 = models.ForeignKey('Archive', related_name='compare_archive2', null=True, on_delete=models.CASCADE)
     resource_compares = models.ManyToManyField('ResourceCompare')
+    # TODO:
+    submitted_url_compare_ready = models.BooleanField(default=False)
     # TODO: figure out if completed is actually useful
     # used to note that expanding archive + parsing records is completed
-
     completed = models.BooleanField(default=False)
 
     def __str__(self):
@@ -36,6 +37,7 @@ class Compare(models.Model):
         changed = self.archive2.resources.filter(status='c').count()
         return total, unchanged, missing, added, changed
 
+
 class Archive(models.Model):
     # file name ending with warc.gz
     warc_name = models.TextField()
@@ -48,8 +50,9 @@ class Archive(models.Model):
     def __str__(self):
         return self.submitted_url
 
-    def save(self, *args, **kwargs):
-        super(Archive, self).save(*args, **kwargs)
+    def create(self, *args, **kwargs):
+        self.create_collections_dir()
+        super(Archive, self).create(*args, **kwargs)
 
     def reset(self):
         """
@@ -101,7 +104,7 @@ class Archive(models.Model):
     def get_full_local_url(self):
         return settings.BASE_URL + self.get_local_url()
 
-    def get_replay_url(self, url):
+    def get_replay_url(self, url=None):
         url = url if url else self.submitted_url
         base_url = '/' + self.get_warc_dir() + '/' + self.timestamp
         return base_url + '/' + url
@@ -169,24 +172,26 @@ class Archive(models.Model):
                     # HACK: figure out a better solution for unknown content types
                     content_type = "unknown"
                 try:
-                    payload = record.content_stream().read().decode()
+                    payload = utils.decode_data(record.content_stream().read())
                 except UnicodeDecodeError as e:
                     if 'image' in content_type:
                         payload = ''
                     else:
-                        print("something went wrong", url)
+                        print("something went wrong", url, e)
                         print(content_type)
-
+                        payload = ''
                 # TODO: figure out what to do with headers
-                res = Resource.objects.create(
-                    url=url,
-                    content_type=content_type,
-                    payload=payload,
-                    headers=str(record.rec_headers),
-                    hash=record.rec_headers.get('warc-payload-digest')
-                )
-                self.resources.add(res)
-
+                try:
+                    res = Resource.objects.create(
+                        url=url,
+                        content_type=content_type,
+                        payload=payload,
+                        headers=str(record.rec_headers),
+                        hash=record.rec_headers.get('warc-payload-digest')
+                    )
+                    self.resources.add(res)
+                except Exception as e:
+                    print("expand_warc_create_resources exception", self.id, url, record, record.rec_headers, e)
         # treat submitted_url as special because there might be redirects
         # TODO: is this the right place for it? should it be done?
         response = self.replay_url(self.submitted_url)
@@ -212,7 +217,7 @@ class Resource(models.Model):
         ('u', 'unchanged'),
         ('p', 'pending'),
     )
-    url = models.URLField(max_length=2000)
+    url = models.URLField(max_length=3000)
     content_type = models.CharField(max_length=1000)
     status = models.CharField(choices=STATUS_CHOICES, default='p', max_length=1)
     payload = models.TextField()
@@ -229,12 +234,13 @@ def compare_file_dir_path(instance, filename):
 
 
 class ResourceCompare(models.Model):
-    resource1 = models.ForeignKey('Resource', related_name='resource1', null=True)
-    resource2 = models.ForeignKey('Resource', related_name='resource2', null=True)
+    resource1 = models.ForeignKey('Resource', related_name='resource1', null=True, on_delete=models.CASCADE)
+    resource2 = models.ForeignKey('Resource', related_name='resource2', null=True, on_delete=models.CASCADE)
     change = models.FloatField(null=True)
     html_deleted = models.FileField(upload_to=compare_file_dir_path, null=True)
     html_added = models.FileField(upload_to=compare_file_dir_path, null=True)
     html_combined = models.FileField(upload_to=compare_file_dir_path, null=True)
+    submitted_url = models.BooleanField(default=False)
 
     def __str__(self):
         return 'Compare %s + %s' % (self.resource1.id, self.resource2.id)

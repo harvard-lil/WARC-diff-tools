@@ -1,27 +1,54 @@
 var resizeTimeout, wrapper;
 
-var detailsButtons = $(".btn-resource-details");
+// using jQuery
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
 
 function init () {
   adjustTopMargin();
-  var clicked = false;
-  if (detailsButtons) {
-    $(".resource-row").hide();
-    for (var i=0; i < detailsButtons.length; i++) {
-      var btn = detailsButtons[i];
-      $("#" + btn.id).click(function(evt){
-        clicked = !clicked;
-        handleShowDetails(clicked, evt.target.id);
-      });
-    }
-  }
-
   window.onresize = function(){
     if (resizeTimeout)
       clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(adjustTopMargin, 200);
   };
 }
+
+function callBackgroundTask() {
+  var csrftoken = getCookie('csrftoken');
+  var url = 'background/' + window.compare_id;
+
+  $.ajax({
+      beforeSend: function(xhr, settings) {
+          if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+              xhr.setRequestHeader("X-CSRFToken", csrftoken);
+          }
+      },
+      url: url,
+      method: "POST",
+      csrfmiddlewaretoken : csrftoken
+      }).done(function () {
+    console.log('done!');
+  })
+}
+
 
 function handleShowDetails (open, btn_id) {
   var resource_type = btn_id.split("resource-count-")[1];
@@ -56,4 +83,21 @@ function adjustTopMargin () {
   wrapper.style.marginTop = "0px";
 }
 
-init();
+document.addEventListener("DOMContentLoaded",function(){
+  init();
+  var detailsButtons = $(".btn-resource-details");
+  var clicked = false;
+  if (detailsButtons) {
+    $(".resource-row").hide();
+    for (var i=0; i < detailsButtons.length; i++) {
+      var btn = detailsButtons[i];
+      $("#" + btn.id).click(function(evt){
+        clicked = !clicked;
+        handleShowDetails(clicked, evt.target.id);
+      });
+    }
+  }
+  setTimeout(function(){
+    callBackgroundTask();
+  }, 2000);
+});

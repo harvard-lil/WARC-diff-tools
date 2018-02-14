@@ -1,9 +1,12 @@
 language: python
 
 python:
-  - "2.7"
+  - "3.6.0"
 
 install: "pip install -r requirements.txt"
+
+before_script:
+  - cp config/settings_travis.py config/settings.py
 
 script:
   - pytest

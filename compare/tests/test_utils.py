@@ -1,4 +1,4 @@
-from dashboard.utils import *
+from compare.utils import *
 
 
 def test_rewrite_html():
