@@ -41,8 +41,12 @@ class Compare(models.Model):
 class Archive(models.Model):
     # file name ending with warc.gz
     warc_name = models.TextField()
+
     # user inputted timestamp, not a django timestamp object
-    timestamp = models.CharField(max_length=255, db_index=True)
+    requested_date = models.CharField(max_length=255, db_index=True)
+
+    # actual timestamp of the creation of the archive
+    actual_timestamp = models.DateTimeField(null=True)
     submitted_url = models.URLField(max_length=2000, db_index=True)
     resources = models.ManyToManyField('Resource')
     completed = models.BooleanField(default=False)
@@ -66,7 +70,7 @@ class Archive(models.Model):
         return settings.ARCHIVES_DIR_STRING + str(self.id)
 
     def get_recording_url(self, url=None):
-        base = settings.ARCHIVES_ROUTE + '/' + self.get_warc_dir() + '/' + 'record' + '/' + self.timestamp
+        base = settings.ARCHIVES_ROUTE + '/' + self.get_warc_dir() + '/' + 'record' + '/' + self.requested_date
         if not url:
             return base + '/' + self.submitted_url
         else:
@@ -91,7 +95,7 @@ class Archive(models.Model):
         return full_archive_parent_path + "/" + self.warc_name
 
     def get_local_url(self, url=None):
-        base = settings.ARCHIVES_ROUTE + '/' + self.get_warc_dir() + '/' + self.timestamp
+        base = settings.ARCHIVES_ROUTE + '/' + self.get_warc_dir() + '/' + self.requested_date
         if not url:
             return base + '/' + self.submitted_url
         else:
@@ -106,7 +110,7 @@ class Archive(models.Model):
 
     def get_replay_url(self, url=None):
         url = url if url else self.submitted_url
-        base_url = '/' + self.get_warc_dir() + '/' + self.timestamp
+        base_url = '/' + self.get_warc_dir() + '/' + self.requested_date
         return base_url + '/' + url
 
     def replay_url(self, url=None):
@@ -137,7 +141,7 @@ class Archive(models.Model):
             return self.get_recording_url(url=url)
 
     def get_friendly_timestamp(self):
-        d = datetime.strptime(self.timestamp, "%Y%m%d")
+        d = datetime.strptime(self.requested_date, "%Y%m%d")
         return str(d.date())
 
     def get_replayed_rewritten_resource_response(self, url):

@@ -24,7 +24,7 @@ def create(request):
 
     for timestamp in (old_timestamp, new_timestamp):
         archive = Archive.objects.create(
-            timestamp=timestamp,
+            requested_date=timestamp,
             submitted_url=submitted_url)
         archive.save()
 
