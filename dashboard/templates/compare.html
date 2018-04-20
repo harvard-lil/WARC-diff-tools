@@ -1,5 +1,7 @@
 {% extends "includes/base.html" %}
+
 {% block title %}Compare web archives{% endblock %}
+{% block content %}
     {% block header %}
         {% if this_page == 'view_pair' %}
           {% include 'includes/header.html' %}
@@ -7,27 +9,25 @@
           {% include 'includes/compare_header.html' %}
         {% endif %}
       {% endblock %}
-
-    <div style="display: block;" class="capture-wrapper">
-    {% if this_page == 'view_pair' %}
-        <div class="col-md-6">
-          <iframe class="archive-display" id="left_frame" src="{{ request1 }}" sandbox></iframe>
-        </div>
-        <div class="col-md-6">
-          <iframe class="archive-display" id="right_frame" src="{{ request2 }}" sandbox></iframe>
-        </div>
-    {% elif this_page == 'compare' %}
-
-      <div style="display: block;" class="capture-wrapper">
-        <div class="col-md-6">
-          <iframe class="archive-display" id="left_frame" src="{{ request1 }}#_diff_deleted_{{ html_deleted }}" sandbox></iframe>
-        </div>
-        <div class="col-md-6">
-          <iframe class="archive-display" id="right_frame" src="{{ request2 }}#_diff_added_{{ html_added }}" sandbox></iframe>
-        </div>
-      </div>
-    {% endif %}
+    <div class="capture-wrapper row">
+        {% if this_page == 'view_pair' %}
+            <div class="col-6">
+              <iframe class="archive-display" id="left_frame" src="{{ request1 }}" sandbox></iframe>
+            </div>
+            <div class="col-6">
+              <iframe class="archive-display" id="right_frame" src="{{ request2 }}" sandbox></iframe>
+            </div>
+        {% elif this_page == 'compare' %}
+            <div class="col-6">
+              <iframe class="archive-display" id="left_frame" src="{{ request1 }}#_diff_deleted_{{ html_deleted }}" sandbox></iframe>
+            </div>
+            <div class="col-6">
+              <iframe class="archive-display" id="right_frame" src="{{ request2 }}#_diff_added_{{ html_added }}" sandbox></iframe>
+            </div>
+        {% endif %}
     </div>
+
+{% endblock %}
 
 {% block scripts %}
 
