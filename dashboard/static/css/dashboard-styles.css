@@ -2,12 +2,12 @@ button, a {
     cursor: pointer;
 }
 
-#left_frame {
-    width: calc(50% - 4px);
-}
-#right_frame {
-    width: calc(50% - 4px);
-}
+/*#left_frame {*/
+    /*width: calc(50% - 4px);*/
+/*}*/
+/*#right_frame {*/
+    /*width: calc(50% - 4px);*/
+/*}*/
 
 #left_frame,
 #right_frame {
@@ -66,6 +66,7 @@ header > .row > .col-primary {
   height: 90px;
   margin-top: 5px;
   margin-bottom: 5px;
+  padding-left: 20px;
 }
 
 .row > .col {
@@ -170,8 +171,12 @@ td {
 }
 
 .comparison-container {
-  max-height: 300px;
+  height: 300px;
   overflow-y: scroll;
+  min-width: 747px;
+  left: -200px;
+  color: #222;
+  overflow-x: hidden;
 }
 
 .comparison-table {
@@ -195,8 +200,12 @@ td {
   margin: 10px;
 }
 
-.comparison-table th {
-  padding: 15px 0px;
+.table thead th {
+  padding: 10px 8px 10px 20px;
+}
+
+.comparison-table th:nth-child(2) {
+  width: 550px;
 }
 
 .comparison-table td {
@@ -214,6 +223,3 @@ td {
 .comparison-table td.resource-added {
   background: #77AE3A;
 }
-
-
-/*# sourceMappingURL=compare-warcs-styles.css.map*/

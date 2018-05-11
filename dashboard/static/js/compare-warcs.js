@@ -67,7 +67,10 @@ function handleShowDetails (open, btn_id) {
       $(".resource-changed").hide();
       $(".resource-added").hide();
     } else if (resource_type === "total") {
-      $(".resource-row").show();
+      // show all
+      $(".resource-added").show();
+      $(".resource-missing").show();
+      $(".resource-changed").show();
     }
   } else {
     $(".resource-row").hide();

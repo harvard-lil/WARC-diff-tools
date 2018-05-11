@@ -54,3 +54,17 @@ def write_to_temp_file(content):
         content = bytes(content, 'utf-8')
         f.write(content)
     return f.name
+
+
+def serialize_model(model):
+    return serializers.serialize('json', [model, ])
+
+
+def shorten_url(url):
+    parsed = urlparse(url)
+
+    if len(parsed.path) > 30:
+        return "%s%s...%s" % (parsed.netloc, parsed.path[0:10], parsed.path[-10:])
+    else:
+        return url
+

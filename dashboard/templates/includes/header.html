@@ -7,7 +7,7 @@
       <form action="/compare/{{ compare_id }}" method="post">
         {% csrf_token %}
         <input type="hidden" name="compare_id" value="{{ compare_id }}">
-        <button class="btn dark-btn" id="go-to-compare" type="submit" disabled>
+        <button class="btn dark-btn" id="go-to-compare" type="submit">
           Compare
         </button>
       </form>
@@ -36,7 +36,7 @@
       <a target="_blank" href="{{ submitted_url }}">View live</a>
     </div>
     <div class="col col-sm-2 col-primary">
-      <a target="" href="/about">About</a>
+      <a target="" href="/">Home</a>
     </div>
 
 

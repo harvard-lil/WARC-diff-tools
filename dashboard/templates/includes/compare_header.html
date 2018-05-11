@@ -24,6 +24,7 @@
                     class="btn btn-ui-small btn-circle btn-resource-details color-total"
                     type="button">
               {{ resource_count.total }}
+            </button>
         </div>
     </div>
     <div class="col col-sm-4 col-primary">
@@ -44,8 +45,8 @@
                   {{ r.content_type }}
                 </td>
                 <td>
-                  <a href="?q={{r.url}}">
-                    {{ r.url}}
+                  <a href="?q={{ r.url }}">
+                    {{ r.shortened_url }}
                   </a>
                 </td>
                 {% if r.change %}
@@ -65,7 +66,7 @@
     </div>
 
     <div class="col col-sm-2 col-primary">
-      <a target="" href="/about" class="light-link">About</a>
+      <a target="" href="/" class="light-link">Home</a>
     </div>
 
   </div>
