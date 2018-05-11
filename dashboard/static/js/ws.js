@@ -1,3 +1,10 @@
+// var socket = new ReconnectingWebSocket("ws://" + window.location.host + "/websocket/", []);
+//
+// socket.send(JSON.stringify({
+//   data: 'compare'
+// }));
+
+
 var s = new WebSocket("ws://" + window.location.host + "/websocket/");
 s.onopen = function(e) {
   console.log("onopen, connected !!!", e);
