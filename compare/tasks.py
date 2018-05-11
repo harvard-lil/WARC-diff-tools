@@ -118,15 +118,15 @@ def create_html_diffs(compare_id, resource_compare_id):
     else:
         print("html diffs already written")
 
-    if comp.archive1.submitted_url == rc.resource1.submitted_url and comp.archive2.submitted_url == rc.resource2.submitted_url:
+    if comp.archive1.submitted_url == rc.resource1.url and comp.archive2.submitted_url == rc.resource2.url:
         comp.submitted_url_compare_ready = True
         comp.save()
-        rc.submitted_url = True
+        rc.is_submitted_url = True
         rc.save()
 
     return {
         "task": "create_html_diffs",
-        "submitted_url": rc.submitted_url,
+        "is_submitted_url": rc.is_submitted_url,
         "status": "success",
         "compare_id": compare_id,
         "rc_id": resource_compare_id,
@@ -200,7 +200,7 @@ def sort_resources(compare_id):
 
 
 @shared_task(base=CallbackTask, name="compare_resources")
-def compare_resource(compare_id, resource1_id, resource2_id, submitted_url=False):
+def compare_resource(compare_id, resource1_id, resource2_id, is_submitted_url=False):
     rc, created = ResourceCompare.objects.get_or_create(resource1=resource1_id, resource2=resource2_id)
     if not rc.resource1.payload or not rc.resource2.payload:
         print("impossible to compare", rc.resource1.id, rc.resource2.id)
@@ -215,6 +215,6 @@ def compare_resource(compare_id, resource1_id, resource2_id, submitted_url=False
     return {
         "compare_id": compare_id,
         "task": "compare_resource",
-        "submitted_url": submitted_url,
+        "is_submitted_url": is_submitted_url,
         "completed": True,
     }
