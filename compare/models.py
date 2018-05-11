@@ -227,7 +227,7 @@ class Resource(models.Model):
     payload = models.TextField()
     hash = models.CharField(max_length=1000)
     headers = models.TextField()
-    submitted_url = models.BooleanField(default=False)
+    is_submitted_url = models.BooleanField(default=False)
 
     def __str__(self):
         return self.url
@@ -244,8 +244,7 @@ class ResourceCompare(models.Model):
     html_deleted = models.FileField(upload_to=compare_file_dir_path, null=True)
     html_added = models.FileField(upload_to=compare_file_dir_path, null=True)
     html_combined = models.FileField(upload_to=compare_file_dir_path, null=True)
-    submitted_url = models.BooleanField(default=False)
+    is_submitted_url = models.BooleanField(default=False)
 
     def __str__(self):
         return 'Compare %s + %s' % (self.resource1.id, self.resource2.id)
-
