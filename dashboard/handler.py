@@ -2,11 +2,11 @@ import uwsgi
 import redis
 
 import json
-import time
 import gevent.select
 
 class WSHandler:
-    def __init__(self, env, sr):
+    def __init__(self, env, startresponse):
+
         if env['PATH_INFO'] == '/':
             print('in init method')
             uwsgi.websocket_handshake(env['HTTP_SEC_WEBSOCKET_KEY'], env.get('HTTP_ORIGIN', ''))
@@ -41,8 +41,10 @@ class WSHandler:
     def send_pong(self, msg):
         req = json.loads(msg)
         print("getting msg:", req)
-        self.send_to_client(msg)
+        msg_to_client = {'data': 'received', 'task': 'pong'}
+        self.send_to_client(msg_to_client)
 
     def send_to_client(self, message):
-        # json_response = json.dumps(message)
-        uwsgi.websocket_send(message)
+        json_response = json.dumps(message)
+        print('sending to client:', json_response)
+        uwsgi.websocket_send(json_response)
