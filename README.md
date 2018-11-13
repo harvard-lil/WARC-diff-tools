@@ -1,5 +1,6 @@
 ## WARC diff tools
-P.S.A This is a work in progress, so please use at your own risk!
+
+####*P.S.A This is a work in progress, so please use at your own risk!*
 All suggestions / issues / pull requests are welcome
 
 Compare two WARC files to find the differences between them using various methods.
@@ -20,6 +21,7 @@ Set up DB:
 ```
 $ psql
 $ createdb warcdiff
+$ ./manage.py migrate
 ```
 
 ### Examples
