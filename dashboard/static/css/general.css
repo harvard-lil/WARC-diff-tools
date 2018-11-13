@@ -1,0 +1,119 @@
+
+body {
+    font-family: basic-sans, sans-serif;
+    font-size: 14px;
+    font-weight: 200;
+}
+
+.page-container {
+    border: 1px solid black;
+    margin-top: 70px;
+    padding: 25px;
+}
+
+.page-container-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+/* yellow: #ffa;*/
+
+.col, .col-1, .col-10, .col-11, .col-12, .col-2, .col-3, .col-4, .col-5, .col-6, .col-7, .col-8, .col-9, .col-auto, .col-lg, .col-lg-1, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-auto, .col-md, .col-md-1, .col-md-10, .col-md-11, .col-md-12, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-md-auto, .col-sm, .col-sm-1, .col-sm-10, .col-sm-11, .col-sm-12, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-auto, .col-xl, .col-xl-1, .col-xl-10, .col-xl-11, .col-xl-12, .col-xl-2, .col-xl-3, .col-xl-4, .col-xl-5, .col-xl-6, .col-xl-7, .col-xl-8, .col-xl-9, .col-xl-auto {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+
+h1 {
+    border-bottom: 1px solid #222;
+    font-weight: 100;
+}
+
+p.description {
+    font-size: 13px;
+    font-weight: 200;
+}
+
+input {
+    margin: 0;
+    /*width: 456px;*/
+    /*float: left;*/
+    border: 1px solid #222;
+    padding: 14px;
+    height: auto;
+    font-size: 20px;
+    font-family: 'Cormorant', serif;
+}
+
+input.form-control {
+    border-radius: 0px;
+}
+
+input#submitted_url {
+    color: #0000ff;
+}
+
+button {
+    border: 1px solid #222;
+    background-color: white;
+    color: #222;
+    letter-spacing: 1px;
+}
+
+button[disabled] {
+    border: 1px solid #222;
+    background-color: white;
+}
+button, input[type="submit"] {
+    padding: 16px 16px 16px 28px;
+}
+
+button:active, button:hover {
+    background-color: #5e5e5e;
+    color: white;
+}
+
+.form-horizontal .control-label{
+text-align:left;
+}
+.col-centered {
+    float: none;
+    margin: 0 auto;
+}
+
+button, a {
+    cursor: pointer;
+}
+
+header {
+    border-bottom: none;
+    /*min-height: 150px;*/
+    display: grid;
+}
+
+
+header .primary-segment {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+.dark-btn {
+    color: #5e5e5e;
+    background-color: white;
+}
+
+.text-centered {
+    text-align: center;
+}
+
+.button-row {
+    margin-top: 20px;
+}
+
+form .error {
+    font-family: Cormorant, serif;
+    color: #ff2d00;
+    font-style:italic;
+}
