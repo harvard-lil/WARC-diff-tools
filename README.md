@@ -1,7 +1,8 @@
-## WARC diff tools
-
+<<<<<<< HEAD
+## WARC diff tools   [![Build Status](https://travis-ci.org/harvard-lil/WARC-diff-tools.svg?branch=master)](https://travis-ci.org/harvard-lil/WARC-diff-tools)
 ####*P.S.A This is a work in progress, so please use at your own risk!*
-All suggestions / issues / pull requests are welcome
+
+All suggestions / issues / pull requests are welcome.
 
 Compare two WARC files to find the differences between them using various methods.
 
