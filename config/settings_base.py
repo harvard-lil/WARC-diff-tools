@@ -26,7 +26,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 'config',
     'django_celery_results',
     'compare',
     'dashboard',
@@ -41,6 +40,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'dashboard.middleware.ExceptionMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -75,7 +75,7 @@ DATABASES = {
         'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '',
-    }
+    },
 }
 
 
@@ -153,4 +153,3 @@ CELERY_BROKER_URL = 'redis://'
 CELERY_REDIS_CONNECT_RETRY = True
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_BROKER_TRANSPORT_OPTIONS = {'socket_timeout': 10}
-CELERY_ALWAYS_EAGER = True

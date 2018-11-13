@@ -30,15 +30,20 @@ class CallbackTask(Task):
         r.publish('websocket', response)
         pass
 
+
 def call_task(fn, *args, **kwargs):
     """
     gets celery signature, executes
     """
-    if settings.RUN_ASYNC:
 
-        res = fn.delay(*args, **kwargs)
+    if settings.RUN_ASYNC:
+        try:
+            res = fn.delay(*args, **kwargs)
+        except:
+            pass
+
     else:
-        res = fn.apply(*args, **kwargs)
+        res = fn.apply(*args, **kwargs, retries=10)
     return res
 
 
@@ -66,6 +71,7 @@ def initial_compare(compare_id):
     compare just the submitted_url resources (the most-likely html response user will see on request of url)
     this allows the site to replay in full while showing highlights
     """
+    compare_id = int(compare_id)
     compare_obj = Compare.objects.get(id=compare_id)
     archive1 = compare_obj.archive1
     archive2 = compare_obj.archive2
@@ -90,9 +96,9 @@ def initial_compare(compare_id):
 
 @shared_task(base=CallbackTask, name="create_html_diffs")
 def create_html_diffs(compare_id, resource_compare_id):
-    print("calling create_html_diffs", compare_id, resource_compare_id)
     comp = Compare.objects.get(id=compare_id)
     rc = ResourceCompare.objects.get(id=resource_compare_id)
+
     if "image" in rc.resource1.content_type:
         # TODO: handle image comparisons
         # maybe using imagemagick here
@@ -101,11 +107,11 @@ def create_html_diffs(compare_id, resource_compare_id):
             "status": "error",
             "reason": "image"
         }
+
     if not rc.html_added or not rc.html_deleted:
         payload1 = rewrite_html(rc.resource1.payload, comp.archive1.get_warc_dir())
         payload2 = rewrite_html(rc.resource2.payload, comp.archive2.get_warc_dir())
         deleted, added, combined = get_html_diff(payload1, payload2)
-
         rc.html_deleted.save('deleted.html', ContentFile(deleted))
         rc.html_added.save('added.html', ContentFile(added))
         rc.html_combined.save('combined.html', ContentFile(combined))

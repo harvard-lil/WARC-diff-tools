@@ -3,8 +3,8 @@ from htmldiffer import diff
 from toggles import shingle_settings
 from compare import utils
 
-archive1_path = "/Users/aaizman/Documents/WARC-diff-tools/collections/20030110_example_com/archive/warc-diff-20171130212034161210-RSJ3M2I2.warc.gz"
-archive2_path = "/Users/aaizman/Documents/WARC-diff-tools/collections/20000110_example_com/archive/warc-diff-20171130210938217967-HKIUU7FF.warc.gz"
+# archive1_path = "/Users/aaizman/Documents/WARC-diff-tools/collections/20030110_example_com/archive/warc-diff-20171130212034161210-RSJ3M2I2.warc.gz"
+# archive2_path = "/Users/aaizman/Documents/WARC-diff-tools/collections/20000110_example_com/archive/warc-diff-20171130210938217967-HKIUU7FF.warc.gz"
 
 class WARCCompare:
     def __init__(self, archive1_path, archive2_path):
@@ -57,45 +57,6 @@ class WARCCompare:
                     compared[url] = results
         return compared
 
-    def calculate_similarity_pair(self, urls=(), minhash=True, simhash=False, sequence_match=False, shingle_settings=shingle_settings):
-        """
-        checking all common resources for changes
-        image checking is broken for now, requires a separate handling
-
-        :param minhash: True or False, default True
-        :param simhash: True or False, default True
-        :param sequence_match: True or False, default True
-        :param shingle_settings: see `shingle_settings` in toggles.py
-
-        :return:
-            { resource_url_path:
-                "hash_change" : True or False (sha1 change)
-                "minhash": minhash_coefficient,
-                "simhash": simhash_distance,
-            }
-        """
-        compared = dict()
-
-        p1 = utils.get_payload(urls[0], self.archive1)
-        p2 = utils.get_payload(urls[1], self.archive2)
-
-        cleaned_p1 = utils.process_text(p1)
-        cleaned_p2 = utils.process_text(p2)
-
-        # shingle cleaned text
-        shingles1 = utils.shingle(cleaned_p1, shingle_settings=shingle_settings)
-        shingles2 = utils.shingle(cleaned_p2, shingle_settings=shingle_settings)
-
-        if minhash:
-            compared['minhash'] = utils.get_minhash(shingles1, shingles2)
-
-        if simhash:
-            compared['simhash'] = utils.get_simhash(shingles1, shingles2)
-
-        if sequence_match:
-            compared['sequence_matched'] = utils.sequence_match(cleaned_dp1, cleaned_dp2)
-
-        return compared
 
     def count_resources(self):
         nums = dict(modified=0, unchanged=0, missing=0, added=0)

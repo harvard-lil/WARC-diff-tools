@@ -29,9 +29,6 @@ html, body
 
   <iframe id="replay_iframe" frameborder="0" seamless="seamless" scrolling="yes" class="wb_iframe"></iframe>
   <script>
-    {#var prefix1 = "http://localhost:8000/perma/"; // "{{ wb_prefix }}"#}
-    {#var prefix2 = "http://localhost:8000/ia/";#}
-    console.log("HO HO HO I'm in frame_insert!!!!!")
     var cframe = new ContentFrame({"url": "{{ url }}" + window.location.hash,
                                  "prefix": "{{ wb_prefix }}",
                                  "request_ts": "{{ wb_url.timestamp }}",

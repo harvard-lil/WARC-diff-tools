@@ -46,5 +46,4 @@ class WSHandler:
 
     def send_to_client(self, message):
         json_response = json.dumps(message)
-        print('sending to client:', json_response)
         uwsgi.websocket_send(json_response)

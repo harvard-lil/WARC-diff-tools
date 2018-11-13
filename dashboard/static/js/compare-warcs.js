@@ -80,13 +80,14 @@ function handleShowDetails (open, btn_id) {
 
 function adjustTopMargin () {
   wrapper = document.getElementsByClassName("capture-wrapper")[0];
-  var header = document.getElementsByTagName('header')[0];
+  // var header = document.getElementsByTagName('header')[0];
   if (!wrapper) return;
   // wrapper.style.marginTop = header.offsetHeight+"px";
   wrapper.style.marginTop = "0px";
 }
 
-document.addEventListener("DOMContentLoaded",function(){
+//on DOM load
+$(function() {
   init();
   var detailsButtons = $(".btn-resource-details");
   var clicked = false;
@@ -101,6 +102,6 @@ document.addEventListener("DOMContentLoaded",function(){
     }
   }
   setTimeout(function(){
-    callBackgroundTask();
+    // callBackgroundTask();
   }, 2000);
 });

@@ -9,8 +9,9 @@
         <div class="page-container-content">
           <h1>Compare web archives</h1>
           <p class="description">Warc diff [ actuall name ]  is a tool prototype that allows viewing web archives side by side for comparison. To get started, please paste one URL and select two dates.</p>
-            <form id="create-compare-form" class="form-horizontal">
+            <form id="create-compare-form" name="createcompareform" method="POST" action="create/"  class="form-horizontal">
               <div class="form-group">
+                {% csrf_token %}
                 <label class="control-label">Start with a URL</label>
                 <input class="form-control"
                        type="url"

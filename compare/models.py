@@ -83,7 +83,7 @@ class Archive(models.Model):
     def get_full_warc_path(self):
         full_archive_parent_path = self.get_full_collection_path() + settings.WARC_ARCHIVE_DIR
         if not os.path.exists(full_archive_parent_path):
-            raise FileNotFoundError("Collection not found")
+            raise FileNotFoundError("Archive has not been recorded yet")
         dir_contents = os.listdir(full_archive_parent_path)
         if not self.warc_name:
             for f in dir_contents:
@@ -125,6 +125,7 @@ class Archive(models.Model):
 
     def create_collections_dir(self):
         collection_path = self.get_full_collection_path()
+        print("create directory", collection_path)
         if not os.path.exists(collection_path):
             os.mkdir(collection_path)
 
@@ -161,6 +162,7 @@ class Archive(models.Model):
         """
         if self.completed:
             return
+
         with open(self.get_full_warc_path(), 'rb') as stream:
             for record in ArchiveIterator(stream):
                 if record.rec_type != 'response':
@@ -205,7 +207,7 @@ class Archive(models.Model):
             content_type=response.headers.get('content-type'),
             payload=payload,
             headers=str(response.headers),
-            submitted_url=True,
+            is_submitted_url=True,
         )
         self.resources.add(res)
         self.completed = True
