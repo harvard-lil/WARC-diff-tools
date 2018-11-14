@@ -9,12 +9,21 @@ except Exception as e:
 from fabric.api import local
 from fabric.decorators import task
 
+from django.conf import settings
+
 
 @task(alias='run')
-def run_django():
-    local("celery -A config worker -E -l info -P gevent")
-    local("python manage.py runserver 0.0.0.0:8082")
-
-@task
 def run_uwsgi():
-    local("uwsgi config/uwsgi.ini")
+    if settings.DEBUG is True:
+        # allows terminal debugging
+        local("uwsgi config/uwsgi.ini --honour-stdin")
+    else:
+        local("uwsgi config/uwsgi.ini")
+
+
+
+# @task(alias='run')
+# def run_django():
+#     local("celery -A config worker -E -l info -P gevent")
+#     local("python manage.py runserver 0.0.0.0:8082")
+

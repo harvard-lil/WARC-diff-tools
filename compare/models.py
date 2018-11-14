@@ -94,16 +94,17 @@ class Archive(models.Model):
 
         return full_archive_parent_path + "/" + self.warc_name
 
-    def get_local_url(self, url=None):
+    def get_local_url(self, url=None, content_type=None):
         base = settings.ARCHIVES_ROUTE + '/' + self.get_warc_dir() + '/' + self.requested_date
         if not url:
             return base + '/' + self.submitted_url
         else:
             # TODO: figure out what to do with multiple urls
+
             if self.resources.filter(url=url):
                 return base + '/' + url
             else:
-                return 'warcdiff-404.html'
+                return '404.html'
 
     def get_full_local_url(self):
         return settings.BASE_URL + self.get_local_url()
@@ -135,9 +136,9 @@ class Archive(models.Model):
         except FileNotFoundError:
             return False
 
-    def get_record_or_local_url(self, url=None):
+    def get_record_or_local_url(self, url=None, content_type=None):
         if self.warc_exists():
-            return self.get_local_url(url=url)
+            return self.get_local_url(url=url, content_type=content_type)
         else:
             return self.get_recording_url(url=url)
 

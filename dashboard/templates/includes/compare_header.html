@@ -45,7 +45,7 @@
                   {{ r.content_type }}
                 </td>
                 <td>
-                  <a href="?q={{ r.url }}">
+                  <a href="?q={{ r.url }}&content_type={{ r.content_type|urlencode }}">
                     {{ r.shortened_url }}
                   </a>
                 </td>
