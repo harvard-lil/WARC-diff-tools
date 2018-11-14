@@ -55,7 +55,7 @@ def count_resources(compare_id):
     return total, unchanged, missing, added, changed
 
 
-@shared_task(base=CallbackTask, name="expand_warc")
+@shared_task(base=CallbackTask, name="expand_warc", default_retry_delay=30, max_retries=15, soft_time_limit=1)
 def expand_warc(archive_id):
     archive = Archive.objects.get(id=archive_id)
     archive.expand_warc_create_resources()
