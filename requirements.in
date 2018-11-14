@@ -1,0 +1,33 @@
+requests>=2.20.0
+async-timeout==2.0.1
+
+# html
+beautifulsoup4==4.6.0
+htmldiffer==0.25.2
+
+# tasks
+celery
+Fabric3
+
+dj-database-url==0.4.2
+django>=2.0.8
+
+paramiko>=2.4.2
+psycopg2
+python-hashes==0.1
+pyopenssl>=17.5.0
+service-identity==17.0.0
+cryptography>=2.3
+backcall==0.1.0
+daphne==1.4.2
+pywb==2.0.0
+uWSGI==2.0.17
+wheel==0.30.0
+whitenoise==3.3.1
+
+-e git://github.com/anastasia/minhash.git@e8a3bd8f918088b6373a8638d719d61e20673920#egg=minhash
+
+# dev tools
+ipdb==0.10.3
+pip-tools
+pytest-django
