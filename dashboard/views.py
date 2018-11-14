@@ -1,11 +1,13 @@
 import requests
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+import urllib.parse
 
 from dashboard.utils import *
 
 from compare.models import Compare, Archive, ResourceCompare
-from compare.tasks import call_task, create_html_diffs, count_resources, initial_compare
+from compare.tasks import call_task, create_html_diffs, \
+    count_resources, initial_compare, expand_warc
 
 
 def index(request):
@@ -54,47 +56,49 @@ def preload_archive(request, archive_url):
     # but also, shouldn't leave it just at the client to fail...
     response = requests.get(settings.PROTOCOL + "://" + settings.BASE_URL + archive_url)
     if not response.status_code != 200:
-        print("resp1 status_code:", response)
         # raise exception here!
         return render(request, '404.html')
     else:
         return response
 
 
-def view_pair(request, compare_id):
+def record_and_view(request, compare_id):
+    """
+    This view does multiple things and should probably be rethought. It kicks off:
+    - recording of archive if it doesn't exist yet
+    - expanding the warcs and records individual resources as Resource instances
+    And finally, it serves the necessary information and template to allow viewing archives side by side
+
+    """
     comp = Compare.objects.get(id=compare_id)
-    archive1 = comp.archive1
-    archive2 = comp.archive2
 
     # kick off non-blocking initial comparison
     # The problem here is if a warc doesn't exist it'll error in the worst possible way
     # background_compare(request, compare_id)
+    arc_requests, timestamps = [], []
 
+    for arc in [comp.archive1, comp.archive2]:
+        arc_req = arc.get_record_or_local_url()
+        if not arc.warc_exists():
+            # preload url, because we want to avoid pywb errors on the front end
+            preload_archive(request, arc_req)
 
-    request1 = archive1.get_record_or_local_url()
-    request2 = archive2.get_record_or_local_url()
+        # expand archive, label individual resources
+        call_task(expand_warc.s(str(arc.id)))
 
-    # preload url, because we want to avoid pywb errors on the front end
-    if not archive1.warc_exists():
-        response1 = preload_archive(request, request1)
-        # archive1.actual_timestamp = response1.headers.get('X-Archive-Orig-date')
-        archive1.save()
-
-    if not archive2.warc_exists():
-        response2 = preload_archive(request, request2)
-        # archive2.actual_timestamp = response2.headers.get('X-Archive-Orig-date')
-        archive2.save()
+        arc_requests.append(arc_req)
+        timestamps.append(arc.get_friendly_timestamp())
 
     # call_task(initial_compare.s(str(comp.id)))
 
     context = {
         "this_page": "view_pair",
         "compare_id": compare_id,
-        "request1": request1,
-        "request2": request2,
-        "timestamp1": archive1.get_friendly_timestamp(),
-        "timestamp2": archive2.get_friendly_timestamp(),
-        "submitted_url": archive1.submitted_url}
+        "request1": arc_requests[0],
+        "request2": arc_requests[1],
+        "timestamp1": timestamps[0],
+        "timestamp2": timestamps[1],
+        "submitted_url": comp.archive1.submitted_url}
 
     return render(request, 'compare.html', context)
 
@@ -104,11 +108,6 @@ def compare(request, compare_id):
     Given a URL contained in this WARC, return a werkzeug BaseResponse for the URL as played back by pywb.
     """
     compare_obj = Compare.objects.get(id=compare_id)
-    print('calling view pair')
-
-    # TODO: this is pretty nuts:
-    # resources1 = compare_obj.archive1.expand_warc_create_resources()
-    # resources2 = compare_obj.archive1.expand_warc_create_resources()
 
     ra = compare_obj.archive1.resources.filter(is_submitted_url=True).first()
     rb = compare_obj.archive2.resources.filter(is_submitted_url=True).first()
@@ -155,9 +154,14 @@ def compare(request, compare_id):
             resource_deets.append(flatten_info(rc.resource2, rc.change))
 
     specific_url = request.GET.get('q', None)
-    request1 = compare_obj.archive1.get_record_or_local_url(url=specific_url)
-    request2 = compare_obj.archive2.get_record_or_local_url(url=specific_url)
-    print("verifying counts", total_count[1], unchanged_count, missing_count)
+    content_type = request.GET.get('content_type', None)
+
+    if content_type:
+        content_type = urllib.parse.unquote(content_type)
+
+    request1 = compare_obj.archive1.get_record_or_local_url(url=specific_url, content_type=content_type)
+    request2 = compare_obj.archive2.get_record_or_local_url(url=specific_url, content_type=content_type)
+
     context = {
         'compare_id': compare_id,
         'request1': request1,
