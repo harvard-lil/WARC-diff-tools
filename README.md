@@ -41,41 +41,41 @@ output is a list of resources split up by the keys:
 - modified (resources that have existed in both (meaning, the path is the same for both) but one of them is not like the other
 - unchanged (resources that have existed in both and nothing has changed)
 
-```
->> wc.resources['added']
+```python
+wc.resources['added']
 ```
 to see just a list of added resources
 
 Check if resource has changed (just checks the recorded hash of the resource, so changes might be absolutely negligible) :
-```
->> wc.resource_changed('/path/to/resource/')
+```python
+wc.resource_changed('/path/to/resource/')
 ```
 output: Boolean, True for changed, False for not changed.
 
 Calculate similarity of all WARC responses using minhash, simhash, and sequence match:
-```
->> wc.calculate_similarity()
+```python
+wc.calculate_similarity()
 ```
 
 Calculate the similarity of resources with dissimilar urls by passing in a list of url pairs
-```
->> wc.calculate_similarity(url_pairs=[('path/to/older_url1', 'path/to/newer_url2'), ('path/to/older_url3', 'path/to/newer_url4'), ])
+```python
+wc.calculate_similarity(url_pairs=[('path/to/older_url1', 'path/to/newer_url2'), ('path/to/older_url3', 'path/to/newer_url4'), ])
 ```
 
 Calculate just the minhash value of all WARC responses:
-```
->> wc.calculate_similarity(simhash=False, sequence_match=False)
-```
+```python
+wc.calculate_similarity(simhash=False, sequence_match=False)
+``` 
 
 Create HTML comparison diffs of a single response:
-```
->> wc.get_visual_diffs('/path/to/resource')
+```python
+wc.get_visual_diffs('/path/to/resource')
 ```
 output: HTML with deletions marked up, HTML with insertions marked up, HTML with both deletions and insertions marked up
 
 Create HTML comparison diffs of a single response with two different paths (if the resource has been moved or renamed, for instance):
-```
->> wc.get_visual_diffs('/path/to/resource', 'path/to/other/resource')
+```python
+wc.get_visual_diffs('/path/to/resource', 'path/to/other/resource')
 ```
 
 
